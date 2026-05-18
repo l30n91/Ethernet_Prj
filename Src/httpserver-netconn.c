@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 
+#include "stm32f4xx_hal.h"
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define WEBSERVER_THREAD_PRIO    ( osPriorityAboveNormal )
@@ -159,9 +160,38 @@ static void http_server_serve(struct netconn *conn)
     if (netconn_err(conn) == ERR_OK) 
     {
       netbuf_data(inbuf, (void**)&buf, &buflen);
-    
-      /* Is this an HTTP GET command? (only check the first 5 chars, since
+
+
+      if ((buflen >= 5) && (strncmp(buf, "GET /", 5) == 0))
+      {
+          if (strncmp(buf, "GET /led_on", 11) == 0)
+          {
+              HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
+
+              netconn_write(conn,
+                            "HTTP/1.1 200 OK\r\n\r\nLED ON",
+                            27,
+                            NETCONN_COPY);
+              return;
+
+          }
+          else if (strncmp(buf, "GET /led_off", 12) == 0)
+          {
+              HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
+
+              netconn_write(conn,
+                            "HTTP/1.1 200 OK\r\n\r\nLED OFF",
+                            28,
+                            NETCONN_COPY);
+              return;
+          }
+
+          /* resto del codice */
+      }
+
+     /* Is this an HTTP GET command? (only check the first 5 chars, since
       there are other formats for GET, and we're keeping it very simple )*/
+
       if ((buflen >=5) && (strncmp(buf, "GET /", 5) == 0))
       {
         /* Check if request to get ST.gif */ 
