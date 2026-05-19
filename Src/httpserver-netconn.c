@@ -172,7 +172,7 @@ static void http_server_serve(struct netconn *conn)
                             "HTTP/1.1 200 OK\r\n\r\nLED ON",
                             27,
                             NETCONN_COPY);
-              return;
+              //return;
 
           }
           else if (strncmp(buf, "GET /led_off", 12) == 0)
@@ -183,7 +183,7 @@ static void http_server_serve(struct netconn *conn)
                             "HTTP/1.1 200 OK\r\n\r\nLED OFF",
                             28,
                             NETCONN_COPY);
-              return;
+              //return;
           }
 
           /* resto del codice */

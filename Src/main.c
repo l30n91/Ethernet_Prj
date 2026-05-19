@@ -86,6 +86,7 @@ int main(void)
   * @param  argument not used
   * @retval None
   */
+extern void tcp_server_init();
 static void StartThread(void const * argument)
 {
   /* Create tcp_ip stack thread */
@@ -95,7 +96,8 @@ static void StartThread(void const * argument)
   Netif_Config();
   
   /* Initialize webserver demo */
-  http_server_netconn_init();
+  //http_server_netconn_init();
+  tcp_server_init();
 
   for( ;; )
   {
