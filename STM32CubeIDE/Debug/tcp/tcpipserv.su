@@ -1,0 +1,11 @@
+../tcp/tcpipserv.c:41:6:tcp_server_init	16	static
+../tcp/tcpipserv.c:50:13:tcp_server_thread	440	static
+../tcp/tcpipserv.c:113:13:process_command	128	static
+../tcp/tcpipserv.c:239:12:parse_set_value	16	static
+../tcp/tcpipserv.c:274:20:set_value_to_string	16	static
+../tcp/tcpipserv.c:301:13:hw_apply_set	16	static
+../tcp/tcpipserv.c:329:19:hw_read_get	4	static
+../tcp/tcpipserv.c:334:14:read_3v3_voltage	4	static
+../tcp/tcpipserv.c:339:14:read_vin_voltage	4	static
+../tcp/tcpipserv.c:344:17:read_pon_counter	4	static
+../tcp/tcpipserv.c:349:17:read_eti_minutes	8	static
