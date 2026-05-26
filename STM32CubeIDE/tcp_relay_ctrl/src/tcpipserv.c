@@ -134,6 +134,8 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
         const char *attenuation = path +3;
 
+        const char *post_attenuation = attenuation + 4;
+
         SetValue_t requestedAtt_value;
         SetPathValue_t requestedPath_value;
 
@@ -142,17 +144,27 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
         //check_attenuation -> 30,Z ecc
 
 
-        /*Controllo preliminare alla fine della stringa, dopo il comando di attenuazione set*/
-        if( (*attenuation != '\r') &&
-        	(*attenuation != '\t') &&
-			(*attenuation != '\n') &&
-			(*attenuation !=  ' ') &&
-			(*attenuation !=  '\0'))
+        /*Controllo preliminare se sono stati digitati gli spazi nel posto giusto, il comando sarà set_Ax_Z*/
+//        if( ((*attenuation != '\r') &&
+//        	(*attenuation  != '\t') &&
+//			(*attenuation  != '\n') &&
+//			(*attenuation  !=  ' ') &&
+//			(*attenuation  !=  '\0'))||
+//
+//			((*post_attenuation != '\r') &&
+//			(*post_attenuation != '\t') &&
+//		    (*post_attenuation != '\n') &&
+//			(*post_attenuation !=  ' ') &&
+//			(*post_attenuation !=  '\0'))
+//		)
+//
+//        {
+//        		snprintf(reply, reply_size, "err:val incorrect spaces\r\n");
+//        		return;
+//        }
 
-        {
-        		snprintf(reply, reply_size, "err:val\r\n");
-        		return;
-        }
+
+
 
         while (*path == ' ' || *path == '\t') /* se prima di path trovi spazi ecc... vai avanti*/
         {
@@ -160,7 +172,7 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
         }
 
 
-        if (parse_path_value(path, &requestedPath_value) == 0 && parse_att_value(attenuation, &requestedAtt_value)) //A1 OR A2, ritorna 1 se tutto ok valori riconosciuti
+        if (parse_path_value(path, &requestedPath_value) == 0 || parse_att_value(attenuation +1, &requestedAtt_value) == 0) //A1 OR A2, ritorna 1 se tutto ok valori riconosciuti
         {
             snprintf(reply, reply_size, "err:val\r\n");
             return;
