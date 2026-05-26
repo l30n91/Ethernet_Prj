@@ -27,7 +27,7 @@ static SetValue_t g_get_value = SET_VAL_0;
 static void tcp_server_thread(void *arg);
 static void process_command(const char *cmd, char *reply, size_t reply_size);
 
-static int parse_set_value(const char *s, SetValue_t *value);
+static int parse_path_value(const char *s, SetValue_t *value);
 static const char *set_value_to_string(SetValue_t value);
 
 static void hw_apply_set(SetValue_t value);
@@ -120,29 +120,32 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
     if (strncmp(cmd, "set", 3) == 0) //* confronta le prime tre locazioni del buffer*/
     {
-        const char *arg = cmd + 3; /* se le prime tre locazioni = set vai all'argomento*/
+        const char *path = cmd + 3;
+
+        const char *attenuation = path +3;
+
         SetValue_t requested_value;
 
-        const char *post_arg = arg +3;
-
-        /*post command check set-cmd-postcmd */
-        if( (*post_arg != '\r') &&
-        	(*post_arg != '\t') &&
-			(*post_arg != '\n') &&
-			(*post_arg !=  ' ') &&
-			(*post_arg !=  '\0'))
+        //check_path -> set A1 30
+        //check_attenuation -> 30,
+        if( (*attenuation != '\r') &&
+        	(*attenuation != '\t') &&
+			(*attenuation != '\n') &&
+			(*attenuation !=  ' ') &&
+			(*attenuation !=  '\0'))
 
         {
         		snprintf(reply, reply_size, "err:val\r\n");
         		return;
         }
 
-        while (*arg == ' ' || *arg == '\t') /* se prima di arg trovi spazi ecc... vai avanti*/
+        while (*path == ' ' || *path == '\t') /* se prima di path trovi spazi ecc... vai avanti*/
         {
-            arg++;
+            path++;
         }
 
-        if (parse_set_value(arg, &requested_value) == 0)
+
+        if (parse_path_value(path, &requested_value) == 0) //A1 OR A2
         {
             snprintf(reply, reply_size, "err:val\r\n");
             return;
@@ -236,7 +239,7 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
     snprintf(reply, reply_size, "err:cmd\r\n");
 }
 
-static int parse_set_value(const char *s, SetValue_t *value)
+static int parse_path_value(const char *s, SetValue_t *value)
 {
     if (strncmp(s, "0", 1) == 0)
     {
@@ -270,6 +273,26 @@ static int parse_set_value(const char *s, SetValue_t *value)
 
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 static const char *set_value_to_string(SetValue_t value)
 {
@@ -350,3 +373,5 @@ static uint32_t read_eti_minutes(void)
 {
     return HAL_GetTick() / 60000u;
 }
+
+
