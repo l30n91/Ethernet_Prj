@@ -1,9 +1,0 @@
-E:/T1893PFW_00/STM32CubeF4/Drivers/BSP/STM32F4xx_Nucleo_144/stm32f4xx_nucleo_144.c:160:10:BSP_GetVersion	4	static
-E:/T1893PFW_00/STM32CubeF4/Drivers/BSP/STM32F4xx_Nucleo_144/stm32f4xx_nucleo_144.c:173:6:BSP_LED_Init	48	static
-E:/T1893PFW_00/STM32CubeF4/Drivers/BSP/STM32F4xx_Nucleo_144/stm32f4xx_nucleo_144.c:199:6:BSP_LED_DeInit	40	static
-E:/T1893PFW_00/STM32CubeF4/Drivers/BSP/STM32F4xx_Nucleo_144/stm32f4xx_nucleo_144.c:216:6:BSP_LED_On	16	static
-E:/T1893PFW_00/STM32CubeF4/Drivers/BSP/STM32F4xx_Nucleo_144/stm32f4xx_nucleo_144.c:229:6:BSP_LED_Off	16	static
-E:/T1893PFW_00/STM32CubeF4/Drivers/BSP/STM32F4xx_Nucleo_144/stm32f4xx_nucleo_144.c:242:6:BSP_LED_Toggle	16	static
-E:/T1893PFW_00/STM32CubeF4/Drivers/BSP/STM32F4xx_Nucleo_144/stm32f4xx_nucleo_144.c:257:6:BSP_PB_Init	40	static
-E:/T1893PFW_00/STM32CubeF4/Drivers/BSP/STM32F4xx_Nucleo_144/stm32f4xx_nucleo_144.c:294:6:BSP_PB_DeInit	40	static
-E:/T1893PFW_00/STM32CubeF4/Drivers/BSP/STM32F4xx_Nucleo_144/stm32f4xx_nucleo_144.c:309:10:BSP_PB_GetState	16	static

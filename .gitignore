@@ -1,0 +1,10 @@
+Debug/
+
+*.o
+*.d
+*.elf
+*.hex
+*.bin
+*.list
+*.su
+*.cyclo

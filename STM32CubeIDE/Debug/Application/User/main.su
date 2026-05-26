@@ -1,5 +1,0 @@
-E:/T1893PFW_00/STM32CubeF4/Projects/STM32F429ZI-Nucleo/Applications/LwIP/LwIP_HTTP_Server_Netconn_RTOS/Src/main.c:52:5:main	40	static
-E:/T1893PFW_00/STM32CubeF4/Projects/STM32F429ZI-Nucleo/Applications/LwIP/LwIP_HTTP_Server_Netconn_RTOS/Src/main.c:90:13:StartThread	16	static
-E:/T1893PFW_00/STM32CubeF4/Projects/STM32F429ZI-Nucleo/Applications/LwIP/LwIP_HTTP_Server_Netconn_RTOS/Src/main.c:114:13:BSP_Config	8	static
-E:/T1893PFW_00/STM32CubeF4/Projects/STM32F429ZI-Nucleo/Applications/LwIP/LwIP_HTTP_Server_Netconn_RTOS/Src/main.c:151:13:Netif_Config	88	static
-E:/T1893PFW_00/STM32CubeF4/Projects/STM32F429ZI-Nucleo/Applications/LwIP/LwIP_HTTP_Server_Netconn_RTOS/Src/main.c:209:13:SystemClock_Config	88	static
