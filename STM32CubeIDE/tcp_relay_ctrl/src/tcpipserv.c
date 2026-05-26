@@ -134,11 +134,15 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
         const char *attenuation = path +3;
 
-        SetValue_t requested_value;
+        SetValue_t requestedAtt_value;
         SetPathValue_t requestedPath_value;
+
         /* set_a1_30, set_a1_z*/
         //check_path -> A1/A2
         //check_attenuation -> 30,Z ecc
+
+
+        /*Controllo preliminare alla fine della stringa, dopo il comando di attenuazione set*/
         if( (*attenuation != '\r') &&
         	(*attenuation != '\t') &&
 			(*attenuation != '\n') &&
@@ -156,11 +160,18 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
         }
 
 
-        if (parse_path_value(path, &requestedPath_value) == 0) //A1 OR A2, ritorna 1 se tutto ok valori riconosciuti
+        if (parse_path_value(path, &requestedPath_value) == 0 && parse_att_value(attenuation, &requestedAtt_value)) //A1 OR A2, ritorna 1 se tutto ok valori riconosciuti
         {
             snprintf(reply, reply_size, "err:val\r\n");
             return;
         }
+
+
+
+
+
+
+
 
         /* applicazione hardware del comando ricevuto*/
         g_set_value = requestedPath_value;
