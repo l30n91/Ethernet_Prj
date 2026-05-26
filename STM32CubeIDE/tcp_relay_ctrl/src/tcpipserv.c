@@ -18,16 +18,26 @@ typedef enum
     SET_VAL_30 = 30,
     SET_VAL_130 = 130,
     SET_VAL_155 = 155,
-    SET_VAL_Z = 999
-} SetValue_t;
+    SET_VAL_H = 999
+} SetValue_t; /*Attenuation values*/
 
-static SetValue_t g_set_value = SET_VAL_0;
-static SetValue_t g_get_value = SET_VAL_0;
+typedef enum
+{
+    SET_PATH_A1 = 0,
+    SET_PATH_A2
+} SetPathValue_t;
+
+
+
+
+static SetPathValue_t g_set_value = SET_VAL_0;
+static SetPathValue_t g_get_value = SET_VAL_0;
 
 static void tcp_server_thread(void *arg);
 static void process_command(const char *cmd, char *reply, size_t reply_size);
 
-static int parse_path_value(const char *s, SetValue_t *value);
+static int parse_path_value(const char *s, SetPathValue_t *value);
+static int parse_att_value(const char *s, SetValue_t *value);
 static const char *set_value_to_string(SetValue_t value);
 
 static void hw_apply_set(SetValue_t value);
@@ -125,9 +135,10 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
         const char *attenuation = path +3;
 
         SetValue_t requested_value;
-
-        //check_path -> set A1 30
-        //check_attenuation -> 30,
+        SetPathValue_t requestedPath_value;
+        /* set_a1_30, set_a1_z*/
+        //check_path -> A1/A2
+        //check_attenuation -> 30,Z ecc
         if( (*attenuation != '\r') &&
         	(*attenuation != '\t') &&
 			(*attenuation != '\n') &&
@@ -145,15 +156,15 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
         }
 
 
-        if (parse_path_value(path, &requested_value) == 0) //A1 OR A2
+        if (parse_path_value(path, &requestedPath_value) == 0) //A1 OR A2, ritorna 1 se tutto ok valori riconosciuti
         {
             snprintf(reply, reply_size, "err:val\r\n");
             return;
         }
 
         /* applicazione hardware del comando ricevuto*/
-        g_set_value = requested_value;
-        hw_apply_set(requested_value);
+        g_set_value = requestedPath_value;
+        hw_apply_set(requestedPath_value);
 
         osDelay(10);
 
@@ -239,7 +250,24 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
     snprintf(reply, reply_size, "err:cmd\r\n");
 }
 
-static int parse_path_value(const char *s, SetValue_t *value)
+static int parse_path_value(const char *s, SetPathValue_t *value)
+{
+    if (strncmp(s, "A1", 2) == 0)
+    {
+        *value = SET_PATH_A1;
+        return 1;
+    }
+    if (strncmp(s, "A2", 2) == 0)
+    {
+           *value = SET_PATH_A2;
+           return 1;
+    }
+
+    return 0;
+}
+
+
+static int parse_att_value(const char *s, SetValue_t *value)
 {
     if (strncmp(s, "0", 1) == 0)
     {
@@ -265,16 +293,14 @@ static int parse_path_value(const char *s, SetValue_t *value)
         return 1;
     }
 
-    if ((s[0] == 'Z') || (s[0] == 'z'))
+    if ((s[0] == 'H') || (s[0] == 'h'))
     {
-        *value = SET_VAL_Z;
+        *value = SET_VAL_H;
         return 1;
     }
 
     return 0;
 }
-
-
 
 
 
@@ -310,8 +336,8 @@ static const char *set_value_to_string(SetValue_t value)
     case SET_VAL_155:
         return "155";
 
-    case SET_VAL_Z:
-        return "Z";
+    case SET_VAL_H:
+        return "H";
 
     default:
         return "err";
@@ -337,7 +363,7 @@ static void hw_apply_set(SetValue_t value)
     case SET_VAL_155:
         break;
 
-    case SET_VAL_Z:
+    case SET_VAL_H:
         break;
 
     default:
