@@ -134,7 +134,7 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
         const char *attenuation = path +3;
 
-        const char *post_attenuation = attenuation + 4;
+        const char *post_attenuation = attenuation + 3;
 
         SetValue_t requestedAtt_value;
         SetPathValue_t requestedPath_value;
@@ -145,24 +145,23 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
 
         /*Controllo preliminare se sono stati digitati gli spazi nel posto giusto, il comando sarà set_Ax_Z*/
-//        if( ((*attenuation != '\r') &&
-//        	(*attenuation  != '\t') &&
-//			(*attenuation  != '\n') &&
-//			(*attenuation  !=  ' ') &&
-//			(*attenuation  !=  '\0'))||
-//
-//			((*post_attenuation != '\r') &&
-//			(*post_attenuation != '\t') &&
-//		    (*post_attenuation != '\n') &&
-//			(*post_attenuation !=  ' ') &&
-//			(*post_attenuation !=  '\0'))
-//		)
-//
-//        {
-//        		snprintf(reply, reply_size, "err:val incorrect spaces\r\n");
-//        		return;
-//        }
+         if( ((*path != '\r') &&
+         	(*path  != '\t') &&
+ 			(*path  != '\n') &&
+ 			(*path  !=  ' ') &&
+			(*path  !=  '\0'))||
 
+			((*attenuation != '\r') &&
+			(*attenuation != '\t') &&
+		    (*attenuation != '\n') &&
+			(*attenuation !=  ' ') &&
+			(*attenuation !=  '\0'))
+		)
+
+        {
+        		snprintf(reply, reply_size, "err:val incorrect spaces\r\n");
+        		return;
+        }
 
 
 
@@ -171,9 +170,9 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
             path++; //path=cmd+4
         }
 
-        while (*attenuation == ' ' || *attenuation == '\t') /* se prima di path trovi spazi ecc... vai avanti*/
+        while (*attenuation == ' ' || *attenuation == '\t') /* se prima di attenuation trovi spazi ecc... vai avanti*/
         {
-                    attenuation++; //path=cmd+4
+            attenuation++; //attenuation=path+4
         }
 
 
