@@ -47,7 +47,7 @@ static int parse_path_value(const char *s, SetPathValue_t *value);
 static int parse_att_value(const char *s, SetValue_t *value);
 static const char *set_value_to_string(SetValue_t value);
 
-static void hw_apply_set(SetValue_t, SetPathValue_t);
+static void hw_apply_set(SetValue_t, SetPathValue_t,  ErrorStatus_t*);
 static SetValue_t hw_read_get(void);
 
 static float read_3v3_voltage(void);
@@ -145,7 +145,7 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
         SetValue_t requestedAtt_value;
         SetPathValue_t requestedPath_value;
-
+        ErrorStatus_t RelayError;
         /* set_a1_30, set_a1_z*/
         //check_path -> A1/A2
         //check_attenuation -> 30,Z ecc
@@ -190,13 +190,14 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
         /* applicazione hardware del comando ricevuto Relay managment*/
         g_set_value = requestedPath_value;
-        hw_apply_set(requestedAtt_value, requestedPath_value);
+        hw_apply_set(requestedAtt_value, requestedPath_value, &RelayError);
 
         osDelay(10);
 
         g_get_value = hw_read_get();
 
-        if (g_get_value == g_set_value)
+        //if (g_get_value == g_set_value)
+        if(!RelayError)
         {
             snprintf(reply, reply_size, "ok:set\r\n");
         }
@@ -370,10 +371,14 @@ typedef struct {
 }PathStatus_t;
 
 
-static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal)
+
+
+
+static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal, ErrorStatus_t* ErrorStatus)
 {
 	PathStatus_t PinStatus;
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET); //nSHDN=1
+
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET); //nSHDN=1
 	switch (AttVal)
     {
     case SET_VAL_0:
@@ -400,11 +405,9 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal)
 					 (PinStatus.PinStatus_PGOOD == GPIO_PIN_SET))
     		 	 {
 
-    		 		;
+    		 		  *ErrorStatus = Err_ok;
 
-
-
-    		 	 }
+                 }
 
     		 	 if (PathVal == SET_PATH_A2)
     		 	 {
