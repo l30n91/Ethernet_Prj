@@ -294,7 +294,7 @@ static void GPIO_Config(void)
 
 
 
-    /*=========================================================
+     /*=========================================================
           PD4 -> L_LA1_G
       =========================================================*/
       /*fill the structure before the pin configuration, then pass
@@ -310,7 +310,21 @@ static void GPIO_Config(void)
 
       HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_RESET);
 
+      /*=========================================================
+               PA15 -> nSHTDN
+      =========================================================*/
+      /*fill the structure before the pin configuration, then pass
+        both the pointers #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)
+        and &GPIO_InitStruct
+       */
+      GPIO_InitStruct.Pin = GPIO_PIN_15;
+      GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+      GPIO_InitStruct.Pull = GPIO_NOPULL;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 
+      HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
 
 
 
