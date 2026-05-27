@@ -25,6 +25,7 @@
 #include "lwip/tcpip.h"
 #include "app_ethernet.h"
 #include "httpserver-netconn.h"
+#include "string.h"
 #ifdef USE_LCD
 #include "lcd_log.h"
 #endif
@@ -296,6 +297,10 @@ static void GPIO_Config(void)
     /*=========================================================
           PD4 -> L_LA1_G
       =========================================================*/
+      /*fill the structure before the pin configuration, then pass
+        both the pointers #define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)
+        and &GPIO_InitStruct
+       */
       GPIO_InitStruct.Pin = GPIO_PIN_4;
       GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
       GPIO_InitStruct.Pull = GPIO_NOPULL;
