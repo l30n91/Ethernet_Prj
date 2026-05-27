@@ -168,11 +168,18 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
         while (*path == ' ' || *path == '\t') /* se prima di path trovi spazi ecc... vai avanti*/
         {
-            path++;
+            path++; //path=cmd+4
+        }
+
+        while (*attenuation == ' ' || *attenuation == '\t') /* se prima di path trovi spazi ecc... vai avanti*/
+        {
+                    attenuation++; //path=cmd+4
         }
 
 
-        if (parse_path_value(path, &requestedPath_value) == 0 || parse_att_value(attenuation +1, &requestedAtt_value) == 0) //A1 OR A2, ritorna 1 se tutto ok valori riconosciuti
+
+
+        if (parse_path_value(path, &requestedPath_value) == 0 || parse_att_value(attenuation, &requestedAtt_value) == 0) //A1 OR A2, ritorna 1 se tutto ok valori riconosciuti
         {
             snprintf(reply, reply_size, "err:val\r\n");
             return;
