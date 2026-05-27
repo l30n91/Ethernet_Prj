@@ -40,7 +40,7 @@ static int parse_path_value(const char *s, SetPathValue_t *value);
 static int parse_att_value(const char *s, SetValue_t *value);
 static const char *set_value_to_string(SetValue_t value);
 
-static void hw_apply_set(SetValue_t value);
+static void hw_apply_set(SetValue_t, SetPathValue_t);
 static SetValue_t hw_read_get(void);
 
 static float read_3v3_voltage(void);
@@ -145,17 +145,17 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
 
         /*Controllo preliminare se sono stati digitati gli spazi nel posto giusto, il comando sarà set_Ax_Z*/
-         if( ((*path != '\r') &&
-         	(*path  != '\t') &&
- 			(*path  != '\n') &&
- 			(*path  !=  ' ') &&
-			(*path  !=  '\0'))||
+         if(((*path != '\r') &&
+         	( *path  != '\t') &&
+ 			( *path  != '\n') &&
+ 			( *path  !=  ' ') &&
+			( *path  !=  '\0'))||
 
 			((*attenuation != '\r') &&
-			(*attenuation != '\t') &&
-		    (*attenuation != '\n') &&
-			(*attenuation !=  ' ') &&
-			(*attenuation !=  '\0'))
+			( *attenuation != '\t') &&
+		    ( *attenuation != '\n') &&
+			( *attenuation !=  ' ') &&
+			( *attenuation !=  '\0'))
 		)
 
         {
@@ -164,19 +164,15 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
         }
 
 
-
         while (*path == ' ' || *path == '\t') /* se prima di path trovi spazi ecc... vai avanti*/
         {
-            path++; //path=cmd+4
+            path++; //path = cmd + 4
         }
 
         while (*attenuation == ' ' || *attenuation == '\t') /* se prima di attenuation trovi spazi ecc... vai avanti*/
         {
-            attenuation++; //attenuation=path+4
+            attenuation++; //attenuation = path + 4
         }
-
-
-
 
         if (parse_path_value(path, &requestedPath_value) == 0 || parse_att_value(attenuation, &requestedAtt_value) == 0) //A1 OR A2, ritorna 1 se tutto ok valori riconosciuti
         {
@@ -185,15 +181,9 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
         }
 
 
-
-
-
-
-
-
         /* applicazione hardware del comando ricevuto*/
         g_set_value = requestedPath_value;
-        hw_apply_set(requestedPath_value);
+        hw_apply_set(requestedAtt_value, requestedPath_value);
 
         osDelay(10);
 
@@ -376,7 +366,7 @@ static const char *set_value_to_string(SetValue_t value)
 /*
  * TODO: qui bisogna mappare i valori sui GPIO/relè reali.
  */
-static void hw_apply_set(SetValue_t value)
+static void hw_apply_set(SetValue_t value, SetPathValue_t PathVal)
 {
     switch (value)
     {
