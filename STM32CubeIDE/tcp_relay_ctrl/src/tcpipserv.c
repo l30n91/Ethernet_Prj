@@ -366,9 +366,17 @@ static const char *set_value_to_string(SetValue_t value)
 /*
  * TODO: qui bisogna mappare i valori sui GPIO/relè reali.
  */
+
+typedef struct {
+	GPIO_PinState PinStatus_KA_NC;
+	GPIO_PinState PinStatus_KA_NO;
+	GPIO_PinState PinStatus_nFLT;
+	GPIO_PinState PinStatus_PGOOD;
+
+}PathStatus_t;
 static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal)
 {
-    GPIO_PinState PinStatus;
+	PathStatus_t PinStatus;
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET); //nSHDN=1
 	switch (AttVal)
     {
@@ -377,14 +385,19 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal)
     	    {
     		 	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //K_A_E = 0
     		 	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, GPIO_PIN_RESET);  //L_LA1_R =0
-    		 	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_SET); //L_LA1_G = 1
+    		 	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_SET);    //L_LA1_G = 1
     		 	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);  //L_LA2_R = 0
     		 	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET); //L_LA2_G = 0
 
-    		 	 PinStatus = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_7);
+    		 	 PinStatus.PinStatus_KA_NC = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_7);
+    		 	 PinStatus.PinStatus_KA_NO = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6);
+    		 	 PinStatus.PinStatus_nFLT =  HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_5);
+    		 	 PinStatus.PinStatus_PGOOD = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3);
 
 
-            }
+
+
+    	    }
 
 
 

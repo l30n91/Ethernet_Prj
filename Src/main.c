@@ -346,7 +346,7 @@ static void GPIO_Config(void)
 
      HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
 
 
 
@@ -452,7 +452,7 @@ static void GPIO_Config(void)
 
      HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_RESET);
+     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);
 
 
 
