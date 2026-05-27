@@ -40,6 +40,7 @@ static void SystemClock_Config(void);
 static void StartThread(void const * argument);
 static void BSP_Config(void);
 static void Netif_Config(void);
+static void GPIO_Config(void);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -62,8 +63,13 @@ int main(void)
   /* Configure the system clock to 180 MHz */
   SystemClock_Config();
   
+
+  GPIO_Config();
+
   /* Initialize LCD and LEDs */
   BSP_Config();
+
+
 
   /* Init thread */
 #if defined(__GNUC__)
@@ -250,6 +256,97 @@ static void SystemClock_Config(void)
    while(1) {};
   }
 }
+
+
+static void GPIO_Config(void)
+{
+    GPIO_InitTypeDef GPIO_InitStruct;
+
+    /*=========================================================
+      CLOCK ENABLE
+    =========================================================*/
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+    __HAL_RCC_GPIOE_CLK_ENABLE();
+    __HAL_RCC_GPIOF_CLK_ENABLE();
+    __HAL_RCC_GPIOG_CLK_ENABLE();
+
+    /*=========================================================
+      RESET STRUCT
+    =========================================================*/
+    memset(&GPIO_InitStruct, 0, sizeof(GPIO_InitStruct));
+
+    /*=========================================================
+      PA5 -> K_A_E
+    =========================================================*/
+    GPIO_InitStruct.Pin = GPIO_PIN_5;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    HAL_GPIO_WritePin(GPIOA,
+                      GPIO_PIN_5,
+                      GPIO_PIN_RESET);
+
+    /*=========================================================
+      PB6 -> K_A_NO
+    =========================================================*/
+    GPIO_InitStruct.Pin = GPIO_PIN_6;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    /*=========================================================
+      PE12 -> L_STA_R
+    =========================================================*/
+    GPIO_InitStruct.Pin = GPIO_PIN_12;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+    HAL_GPIO_WritePin(GPIOE,
+                      GPIO_PIN_12,
+                      GPIO_PIN_RESET);
+
+
+    /*=========================================================
+          PD4 -> L_LA1_G
+      =========================================================*/
+      GPIO_InitStruct.Pin = GPIO_PIN_4;
+      GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+      GPIO_InitStruct.Pull = GPIO_NOPULL;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+      HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+      HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_RESET);
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #ifdef  USE_FULL_ASSERT
