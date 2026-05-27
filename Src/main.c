@@ -281,39 +281,16 @@ static void GPIO_Config(void)
     /*=========================================================
       PA5 -> K_A_E
     =========================================================*/
-    GPIO_InitStruct.Pin = GPIO_PIN_5;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    HAL_GPIO_WritePin(GPIOA,
-                      GPIO_PIN_5,
-                      GPIO_PIN_RESET);
 
     /*=========================================================
       PB6 -> K_A_NO
     =========================================================*/
-    GPIO_InitStruct.Pin = GPIO_PIN_6;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     /*=========================================================
       PE12 -> L_STA_R
     =========================================================*/
-    GPIO_InitStruct.Pin = GPIO_PIN_12;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 
-    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-
-    HAL_GPIO_WritePin(GPIOE,
-                      GPIO_PIN_12,
-                      GPIO_PIN_RESET);
 
 
     /*=========================================================
