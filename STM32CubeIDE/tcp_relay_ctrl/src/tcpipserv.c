@@ -373,7 +373,7 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal)
 	switch (AttVal)
     {
     case SET_VAL_0:
-    	 if (strncmp(s, "A1", 2) == 0)
+    	 if (PathVal == SET_PATH_A1)
     	    {
     		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //K_A_E = 0
     		 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, GPIO_PIN_RESET);  //L_LA1_R =0
