@@ -40,6 +40,7 @@ typedef enum
 static SetPathValue_t g_set_value = SET_VAL_0;
 static SetPathValue_t g_get_value = SET_VAL_0;
 
+ErrorStatus_t* CheckRelayStatus(ErrorStatus_t*);
 static void tcp_server_thread(void *arg);
 static void process_command(const char *cmd, char *reply, size_t reply_size);
 
@@ -141,7 +142,7 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
         const char *attenuation = path +3;
 
-        const char *post_attenuation = attenuation + 3;
+        //const char *post_attenuation = attenuation + 3;
 
         SetValue_t requestedAtt_value;
         SetPathValue_t requestedPath_value;
@@ -376,7 +377,7 @@ typedef struct {
 
 static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal, ErrorStatus_t* ErrorStatus)
 {
-	PathStatus_t PinStatus;
+
 
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET); //nSHDN=1
 	switch (AttVal)
@@ -384,41 +385,30 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal, ErrorStatus_
     case SET_VAL_0:
     	 if (PathVal == SET_PATH_A1)
     	    {
-    		 	 /*Set Relay di ingresso a 2 stati*/
-    		     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //K_A_E = 0
-    		 	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, GPIO_PIN_RESET);  //L_LA1_R =0
-    		 	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_SET);    //L_LA1_G = 1
-    		 	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);  //L_LA2_R = 0
-    		 	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET); //L_LA2_G = 0
+    		  /*Set Relay di ingresso a 2 stati*/
+    		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //K_A_E = 0
+    		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, GPIO_PIN_RESET);  //L_LA1_R =0
+    		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_SET);    //L_LA1_G = 1
+    		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);  //L_LA2_R = 0
+    		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET); //L_LA2_G = 0
 
-    		 	 /* Set Relay a 3 stati */
+    		 /* Set Relay a 3 stati */
 
-    		 	 /*Read Status Relay a 2 stati*/
-    		 	 PinStatus.PinStatus_KA_NC = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_7);
-    		 	 PinStatus.PinStatus_KA_NO = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6);
-    		 	 PinStatus.PinStatus_nFLT =  HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_5);
-    		 	 PinStatus.PinStatus_PGOOD = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3);
+    		 /*Lettura Status Relay a 2 stati*/
 
-    		 	 if  ((PinStatus.PinStatus_KA_NC == GPIO_PIN_RESET) &&
-    		 		 (PinStatus.PinStatus_KA_NO == GPIO_PIN_SET) &&
-			         (PinStatus.PinStatus_nFLT == GPIO_PIN_RESET) &&
-					 (PinStatus.PinStatus_PGOOD == GPIO_PIN_SET))
-    		 	 {
+              CheckRelayStatus(ErrorStatus);
 
-    		 		  *ErrorStatus = Err_ok;
 
-                 }
-
-    		 	 if (PathVal == SET_PATH_A2)
-    		 	 {
+    	 if (PathVal == SET_PATH_A2)
+          {
 
 
 
 
-    		 	 }
+    	 }
 
 
-             }
+            }
 
 
 
@@ -445,9 +435,39 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal, ErrorStatus_
 }
 
 /*
- * TODO: qui devi leggere lo stato reale dai feedback hardware.
+ * TODO:  leggere lo stato reale dai feedback hardware.
  * Per ora restituisce l'ultimo set comandato.
  */
+ErrorStatus_t* CheckRelayStatus(ErrorStatus_t* ErrorStatus )
+{
+
+	PathStatus_t PinStatus;
+	PinStatus.PinStatus_KA_NC = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_7);
+	PinStatus.PinStatus_KA_NO = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6);
+	PinStatus.PinStatus_nFLT =  HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_5);
+	PinStatus.PinStatus_PGOOD = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3);
+
+
+	if  ((PinStatus.PinStatus_KA_NC == GPIO_PIN_RESET) &&
+					 (PinStatus.PinStatus_KA_NO == GPIO_PIN_SET) &&
+					 (PinStatus.PinStatus_nFLT == GPIO_PIN_RESET) &&
+					 (PinStatus.PinStatus_PGOOD == GPIO_PIN_SET))
+	  {
+
+		 *ErrorStatus = Err_ok;
+
+	  }
+
+
+	return ErrorStatus;
+
+}
+
+
+
+
+
+
 static SetValue_t hw_read_get(void)
 {
 
