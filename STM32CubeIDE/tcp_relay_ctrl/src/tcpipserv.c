@@ -268,7 +268,7 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
                  "set 30\r\n"
                  "set 130\r\n"
                  "set 155\r\n"
-                 "set Z\r\n"
+                 "set H\r\n"
                  "get\r\n"
                  "info\r\n"
                  "help\r\n");
