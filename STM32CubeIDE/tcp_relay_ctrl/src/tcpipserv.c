@@ -454,18 +454,6 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal, ErrorStatus_
     	     /* Set Relay a 3 stati */
     	  }
 
-    	 //if (PathVal == SET_PATH_B2)
-    	 // {
-    	    /*Set Relay di ingresso a 2 stati*/
-    	 //   HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, GPIO_PIN_SET);  //K_B_E = 1
-
-            /*Da inserire un delay per attendere lo switch del relay prima di fare il check*/
-
-    	   /*Lettura Status Relay a 2 stati*/
-    	//  CheckRelayStatusB2(ErrorStatus);
-
-
-    	   /* Set Relay a 3 stati */
     	 break;
 
 
@@ -576,9 +564,6 @@ ErrorStatus_t* CheckRelayStatusA1(ErrorStatus_t* ErrorStatus )
       return ErrorStatus;
 
 }
-
-
-
 ErrorStatus_t* CheckRelayStatusB1(ErrorStatus_t* ErrorStatus )
 {
 
@@ -668,9 +653,6 @@ ErrorStatus_t* CheckRelayStatusB1(ErrorStatus_t* ErrorStatus )
       return ErrorStatus;
 
 }
-
-
-
 ErrorStatus_t* CheckRelayStatusA2(ErrorStatus_t* ErrorStatus )
 {
 
@@ -759,6 +741,96 @@ ErrorStatus_t* CheckRelayStatusA2(ErrorStatus_t* ErrorStatus )
     return ErrorStatus;
 
 }
+ErrorStatus_t* CheckRelayStatusB2(ErrorStatus_t* ErrorStatus )
+{
+
+	PathStatus_t PinStatus;
+	PinStatus.PinStatus_KB_NC = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_2);
+	PinStatus.PinStatus_KB_NO = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_5);
+	PinStatus.PinStatus_nFLT =  HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_5);
+	PinStatus.PinStatus_PGOOD = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3);
+
+
+
+
+	if((PinStatus.PinStatus_KB_NC == GPIO_PIN_SET) &&
+	  (PinStatus.PinStatus_KB_NO == GPIO_PIN_RESET) &&
+	  (PinStatus.PinStatus_nFLT == GPIO_PIN_SET) &&
+	  (PinStatus.PinStatus_PGOOD == GPIO_PIN_SET))
+	  {
+
+
+		 HAL_GPIO_WritePin(GPIOG, GPIO_PIN_10, GPIO_PIN_RESET);  //L_LB1_R =0
+		 HAL_GPIO_WritePin(GPIOH, GPIO_PIN_2, GPIO_PIN_RESET);    //L_LB1_G = 0
+		 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_6, GPIO_PIN_RESET);  //L_LB2_R = 0
+		 HAL_GPIO_WritePin(GPIOG, GPIO_PIN_15, GPIO_PIN_SET); //L_LB2_G = 1
+
+		*ErrorStatus = Err_ok;
+
+	  }
+
+	else if((PinStatus.PinStatus_KB_NC == GPIO_PIN_SET) &&
+		  (PinStatus.PinStatus_KB_NO == GPIO_PIN_SET) &&
+		  (PinStatus.PinStatus_nFLT == GPIO_PIN_SET) &&
+		  (PinStatus.PinStatus_PGOOD == GPIO_PIN_SET))
+
+      {
+
+		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //nSHTDN=0
+
+		 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_SET);  //L_LB1_R =1
+	     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);    //L_LB1_G = 0
+		 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);  //L_LB2_R = 1
+		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //L_LB2_G = 0
+
+
+		*ErrorStatus = Err_KB_Disconnected;
+
+	  }
+
+	else if((PinStatus.PinStatus_KB_NC == GPIO_PIN_RESET) &&
+			  (PinStatus.PinStatus_KB_NO == GPIO_PIN_RESET) &&
+			  (PinStatus.PinStatus_nFLT == GPIO_PIN_SET) &&
+			  (PinStatus.PinStatus_PGOOD == GPIO_PIN_SET))
+
+	      {
+
+			 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //nSHTDN=0
+
+			 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_SET);  //L_LB1_R =1
+		     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_SET);    //L_LB1_G = 1
+			 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);  //L_LB2_R = 1
+			 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //L_LB2_G = 0
+
+
+			*ErrorStatus = Err_KB_Short;
+
+		  }
+
+	else if((PinStatus.PinStatus_KB_NC == GPIO_PIN_SET) &&
+				  (PinStatus.PinStatus_KB_NO == GPIO_PIN_SET) &&
+				  (PinStatus.PinStatus_nFLT == GPIO_PIN_RESET) &&
+				  (PinStatus.PinStatus_PGOOD == GPIO_PIN_RESET))
+
+		      {
+
+				 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //nSHTDN=0
+
+				 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_SET);  //L_LB1_R    = 1
+			     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);    //L_LB1_G = 0
+				 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);  //L_LB2_R   = 0
+				 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //L_LB2_G   = 0
+
+
+				*ErrorStatus = Err_PWR;
+
+			  }
+
+
+      return ErrorStatus;
+
+}
+
 
 
 static SetValue_t hw_read_get(void)
