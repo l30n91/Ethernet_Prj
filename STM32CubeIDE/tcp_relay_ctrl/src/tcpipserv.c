@@ -202,9 +202,9 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
         {
             snprintf(reply, reply_size, "ok:set\r\n");
         }
-        else
+        else if (RelayError == Err_KA_Disconnected)
         {
-            snprintf(reply, reply_size, "err:set\r\n");
+            snprintf(reply, reply_size, "err:KA disconnected\r\n");
         }
 
         return;
@@ -387,10 +387,6 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal, ErrorStatus_
     	    {
     		  /*Set Relay di ingresso a 2 stati*/
     		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //K_A_E = 0
-    		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, GPIO_PIN_RESET);  //L_LA1_R =0
-    		  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_SET);    //L_LA1_G = 1
-    		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);  //L_LA2_R = 0
-    		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET); //L_LA2_G = 0
 
     		 /* Set Relay a 3 stati */
 
@@ -405,7 +401,7 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal, ErrorStatus_
 
 
 
-    	 }
+    	  }
 
 
             }
@@ -448,15 +444,43 @@ ErrorStatus_t* CheckRelayStatus(ErrorStatus_t* ErrorStatus )
 	PinStatus.PinStatus_PGOOD = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3);
 
 
-	if  ((PinStatus.PinStatus_KA_NC == GPIO_PIN_RESET) &&
-					 (PinStatus.PinStatus_KA_NO == GPIO_PIN_SET) &&
-					 (PinStatus.PinStatus_nFLT == GPIO_PIN_RESET) &&
-					 (PinStatus.PinStatus_PGOOD == GPIO_PIN_SET))
+
+
+	if((PinStatus.PinStatus_KA_NC == GPIO_PIN_RESET) &&
+	  (PinStatus.PinStatus_KA_NO == GPIO_PIN_SET) &&
+	  (PinStatus.PinStatus_nFLT == GPIO_PIN_SET) &&
+	  (PinStatus.PinStatus_PGOOD == GPIO_PIN_SET))
 	  {
 
-		 *ErrorStatus = Err_ok;
+
+		 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, GPIO_PIN_RESET);  //L_LA1_R =0
+		 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_SET);    //L_LA1_G = 1
+		 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);  //L_LA2_R = 0
+		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET); //L_LA2_G = 0
+		*ErrorStatus = Err_ok;
 
 	  }
+
+	else if((PinStatus.PinStatus_KA_NC == GPIO_PIN_SET) &&
+		  (PinStatus.PinStatus_KA_NO == GPIO_PIN_SET) &&
+		  (PinStatus.PinStatus_nFLT == GPIO_PIN_SET) &&
+		  (PinStatus.PinStatus_PGOOD == GPIO_PIN_SET))
+
+      {
+
+		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //nSHTDN=0
+
+		 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, GPIO_PIN_SET);  //L_LA1_R =1
+	     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_RESET);    //L_LA1_G = 0
+		 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);  //L_LA2_R = 0
+		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET); //L_LA2_G = 0
+
+
+		*ErrorStatus = Err_KA_Disconnected;
+
+	  }
+
+
 
 
 	return ErrorStatus;

@@ -383,7 +383,7 @@ static void GPIO_Config(void)
 
      HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
 
      /*=========================================================
                  PD3 -> L_LA1_R
@@ -434,7 +434,7 @@ static void GPIO_Config(void)
 
      HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_5, GPIO_PIN_RESET);
+     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_5, GPIO_PIN_SET);
 
 
 
