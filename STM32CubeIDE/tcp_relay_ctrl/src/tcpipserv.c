@@ -474,30 +474,7 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal, ErrorStatus_
         break;
 
     case SET_VAL_130:
-    	if (PathVal == SET_PATH_A1)
-        {
-    	  /*Set Relay di ingresso a 2 stati*/
-    	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //K_A_E = 0
-    	  /*Lettura Status Relay a 2 stati*/
-    	  CheckRelayStatusA1(ErrorStatus);
-          *ErrorStatus = Err_ok;
-    	  /* Set Relay a 3 stati */
-        }
-
-    	if (PathVal == SET_PATH_A2)
-    	{
-		  /*Set Relay di ingresso a 2 stati*/
-		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);  //K_A_E = 0
-
-
-
-		  /*Lettura Status Relay a 2 stati*/
-		  CheckRelayStatusA2(ErrorStatus);
-		  /* Set Relay a 3 stati */
-        }
-
-
-    break;
+    	break;
 
     case SET_VAL_155:
         break;
