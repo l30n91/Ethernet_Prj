@@ -217,7 +217,11 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
             snprintf(reply, reply_size, "err:KA disconnected\r\n");
 
         }
+        else if (RelayError == Err_KB_Disconnected)
+        {
+            snprintf(reply, reply_size, "err:KB disconnected\r\n");
 
+        }
         return;
     }
 
@@ -641,7 +645,7 @@ ErrorStatus_t* CheckRelayStatusB1(ErrorStatus_t* ErrorStatus )
 		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //L_LB2_G = 0
 
 
-		*ErrorStatus = Err_KA_Disconnected;
+		*ErrorStatus = Err_KB_Disconnected;
 
 	  }
 
@@ -660,7 +664,7 @@ ErrorStatus_t* CheckRelayStatusB1(ErrorStatus_t* ErrorStatus )
 			 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET); //L_LB2_G = 1
 
 
-			*ErrorStatus = Err_KA_Short;
+			*ErrorStatus = Err_KB_Short;
 
 		  }
 
