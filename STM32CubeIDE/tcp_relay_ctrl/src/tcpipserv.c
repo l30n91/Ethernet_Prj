@@ -477,8 +477,8 @@ ErrorStatus_t* CheckRelayStatus(ErrorStatus_t* ErrorStatus )
 
 	  }
 
-	else if((PinStatus.PinStatus_KA_NC == GPIO_PIN_SET) &&
-			  (PinStatus.PinStatus_KA_NO == GPIO_PIN_SET) &&
+	else if((PinStatus.PinStatus_KA_NC == GPIO_PIN_RESET) &&
+			  (PinStatus.PinStatus_KA_NO == GPIO_PIN_RESET) &&
 			  (PinStatus.PinStatus_nFLT == GPIO_PIN_SET) &&
 			  (PinStatus.PinStatus_PGOOD == GPIO_PIN_SET))
 
