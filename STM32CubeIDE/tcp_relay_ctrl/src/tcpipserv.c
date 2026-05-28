@@ -42,7 +42,7 @@ typedef enum
 static SetPathValue_t g_set_value = SET_VAL_0;
 static SetPathValue_t g_get_value = SET_VAL_0;
 
-ErrorStatus_t* CheckRelayStatus(ErrorStatus_t*);
+ErrorStatus_t* CheckRelayStatusA1(ErrorStatus_t*);
 static void tcp_server_thread(void *arg);
 static void process_command(const char *cmd, char *reply, size_t reply_size);
 
@@ -192,12 +192,12 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
 
         /* applicazione hardware del comando ricevuto Relay managment*/
-        g_set_value = requestedPath_value;
+        //g_set_value = requestedPath_value;
         hw_apply_set(requestedAtt_value, requestedPath_value, &RelayError);
 
         osDelay(10);
 
-        g_get_value = hw_read_get();
+        //g_get_value = hw_read_get();
 
         //if (g_get_value == g_set_value)
         if(!RelayError)
@@ -207,6 +207,7 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
         else if (RelayError == Err_KA_Disconnected)
         {
             snprintf(reply, reply_size, "err:KA disconnected\r\n");
+
         }
 
         return;
@@ -389,12 +390,12 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal, ErrorStatus_
     	    {
     		  /*Set Relay di ingresso a 2 stati*/
     		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //K_A_E = 0
+    		  /*Lettura Status Relay a 2 stati*/
+              CheckRelayStatusA1(ErrorStatus);
 
     		 /* Set Relay a 3 stati */
 
-    		 /*Lettura Status Relay a 2 stati*/
 
-              CheckRelayStatus(ErrorStatus);
     	    }
 
     	 if (PathVal == SET_PATH_A2)
@@ -413,6 +414,32 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal, ErrorStatus_
         break;
 
     case SET_VAL_130:
+    	if (PathVal == SET_PATH_A1)
+        {
+    	 /*Set Relay di ingresso a 2 stati*/
+    	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //K_A_E = 0
+    	 /*Lettura Status Relay a 2 stati*/
+    	 CheckRelayStatusA1(ErrorStatus);
+         *ErrorStatus =Err_ok;
+    	 /* Set Relay a 3 stati */
+        }
+
+    	if (PathVal == SET_PATH_A2)
+    	 {
+
+
+
+
+    	}
+
+
+
+
+
+
+
+
+
         break;
 
     case SET_VAL_155:
@@ -430,7 +457,7 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal, ErrorStatus_
  * TODO:  leggere lo stato reale dai feedback hardware.
  * Per ora restituisce l'ultimo set comandato.
  */
-ErrorStatus_t* CheckRelayStatus(ErrorStatus_t* ErrorStatus )
+ErrorStatus_t* CheckRelayStatusA1(ErrorStatus_t* ErrorStatus )
 {
 
 	PathStatus_t PinStatus;
