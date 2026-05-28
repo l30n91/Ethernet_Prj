@@ -24,14 +24,16 @@ typedef enum
 typedef enum
 {
     SET_PATH_A1 = 0,
-    SET_PATH_A2
+    SET_PATH_A2,
+	SET_PATH_B1,
+	SET_PATH_B2
 } SetPathValue_t;
 
 typedef enum
 {
  	Err_ok =0,
 	Err_KA_Disconnected,
-	Err_Ka_Short,
+	Err_KA_Short,
 	Err_PWR
 
 }ErrorStatus_t;
@@ -393,7 +395,7 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal, ErrorStatus_
     		 /*Lettura Status Relay a 2 stati*/
 
               CheckRelayStatus(ErrorStatus);
-
+    	    }
 
     	 if (PathVal == SET_PATH_A2)
           {
@@ -402,12 +404,6 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal, ErrorStatus_
 
 
     	  }
-
-
-            }
-
-
-
 
 
 
@@ -457,6 +453,7 @@ ErrorStatus_t* CheckRelayStatus(ErrorStatus_t* ErrorStatus )
 		 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_SET);    //L_LA1_G = 1
 		 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);  //L_LA2_R = 0
 		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET); //L_LA2_G = 0
+
 		*ErrorStatus = Err_ok;
 
 	  }
@@ -479,6 +476,61 @@ ErrorStatus_t* CheckRelayStatus(ErrorStatus_t* ErrorStatus )
 		*ErrorStatus = Err_KA_Disconnected;
 
 	  }
+
+	else if((PinStatus.PinStatus_KA_NC == GPIO_PIN_SET) &&
+			  (PinStatus.PinStatus_KA_NO == GPIO_PIN_SET) &&
+			  (PinStatus.PinStatus_nFLT == GPIO_PIN_SET) &&
+			  (PinStatus.PinStatus_PGOOD == GPIO_PIN_SET))
+
+	      {
+
+			 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //nSHTDN=0
+
+			 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, GPIO_PIN_SET);  //L_LA1_R =1
+		     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_RESET);    //L_LA1_G = 0
+			 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);  //L_LA2_R = 0
+			 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET); //L_LA2_G = 0
+
+
+			*ErrorStatus = Err_KA_Short;
+
+		  }
+
+	else if((PinStatus.PinStatus_KA_NC == GPIO_PIN_SET) &&
+				  (PinStatus.PinStatus_KA_NO == GPIO_PIN_SET) &&
+				  (PinStatus.PinStatus_nFLT == GPIO_PIN_RESET) &&
+				  (PinStatus.PinStatus_PGOOD == GPIO_PIN_RESET))
+
+		      {
+
+				 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //nSHTDN=0
+
+				 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, GPIO_PIN_SET);  //L_LA1_R =1
+			     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_RESET);    //L_LA1_G = 0
+				 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);  //L_LA2_R = 0
+				 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET); //L_LA2_G = 0
+
+
+				*ErrorStatus = Err_PWR;
+
+			  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
