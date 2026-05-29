@@ -42,6 +42,8 @@ static void StartThread(void const * argument);
 static void BSP_Config(void);
 static void Netif_Config(void);
 static void GPIO_Config(void);
+static void RelayInitConfig(void);
+static void LedInitConfig(void);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -584,13 +586,44 @@ static void GPIO_Config(void)
 
      HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);
 
-
+     RelayInitConfig();
+     LedInitConfig();
 
 
 }
 
 
+void RelayInitConfig(void)
+{
 
+
+
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);           /*K_A_E */
+	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);            /*KA_NO */
+	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);           /*KA_NC */
+	 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, GPIO_PIN_RESET);        /*K_B_E */
+	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_2, GPIO_PIN_SET);         /*KB_NC */
+	 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_5, GPIO_PIN_SET);        /*KB_NO */
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);    /*nSHTDN*/
+	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_5, GPIO_PIN_SET);      /*nFLT  */
+	 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);     /*PGOOD */
+
+}
+void LedInitConfig(void)
+{
+
+
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_RESET);         /*L_LA1_G*/
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, GPIO_PIN_RESET);        /*L_LA1_R*/
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);       /*L_LA2_R*/
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);      /*L_LA2_G*/
+	HAL_GPIO_WritePin(GPIOH, GPIO_PIN_2, GPIO_PIN_RESET);     /*L_LB1_G*/
+	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_10,GPIO_PIN_RESET);    /*L_LB1_R*/
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_6, GPIO_PIN_RESET);   /*L_LB2_R*/
+	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_15, GPIO_PIN_RESET); /*L_LB2_G*/
+
+
+}
 
 
 
