@@ -48,6 +48,7 @@ ErrorStatus_t* CheckRelayStatusA1(ErrorStatus_t*);
 ErrorStatus_t* CheckRelayStatusA2(ErrorStatus_t*);
 ErrorStatus_t* CheckRelayStatusB1(ErrorStatus_t*);
 ErrorStatus_t* CheckRelayStatusB2(ErrorStatus_t*);
+static void CheckPathVal(SetPathValue_t,SetPathValue_t,ErrorStatus_t*, ErrorStatus_t*);
 
 
 
@@ -464,50 +465,10 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_
     {
     case SET_VAL_0:
 
-    	 if (PathVal == SET_PATH_A1)
-    	    {
-    		  /*Set Relay di ingresso a 2 stati*/
-    		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //K_A_E = 0
 
-    		  /*Da inserire un delay per attendere lo switch del relay prima di fare il check*/
-
-    		  /*Lettura Status Relay a 2 stati*/
-              CheckRelayStatusA1(ErrorStatusPath1);
-
-    		  /* Set Relay a 3 stati */
+      CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
 
 
-    	    }
-
-    	 if (PathVal == SET_PATH_A2)
-          {
-    		 /*Set Relay di ingresso a 2 stati*/
-    		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);  //K_A_E = 1
-
-
-    		 /*Da inserire un delay per attendere lo switch del relay prima di fare il check*/
-
-    		 /*Lettura Status Relay a 2 stati*/
-    		 CheckRelayStatusA2(ErrorStatusPath1);
-
-
-    		  /* Set Relay a 3 stati */
-           }
-
-    	 if (PathVal2 == SET_PATH_B1)
-    	  {
-    	    /*Set Relay di ingresso a 2 stati*/
-    	    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //K_B_E = 0
-
-
-    	    /*Da inserire un delay per attendere lo switch del relay prima di fare il check*/
-
-    	    /*Lettura Status Relay a 2 stati*/
-    	    CheckRelayStatusB1(ErrorStatusPath2);
-
-
-    	     /* Set Relay a 3 stati */
-    	  }
 
     	 break;
 
@@ -885,7 +846,62 @@ ErrorStatus_t* CheckRelayStatusB2(ErrorStatus_t* ErrorStatus )
       return ErrorStatus;
 
 }
+static void CheckPathVal(SetPathValue_t PathVal,SetPathValue_t PathVal2, ErrorStatus_t* ErrorStatusPath1, ErrorStatus_t* ErrorStatusPath2)
+{
+	if (PathVal == SET_PATH_A1)
+	 {
+	     /*Set Relay di ingresso a 2 stati*/
+	     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //K_A_E = 0
 
+	     /*Da inserire un delay per attendere lo switch del relay prima di fare il check*/
+
+	     /*Lettura Status Relay a 2 stati*/
+	     CheckRelayStatusA1(ErrorStatusPath1);
+
+	     /* Set Relay a 3 stati */
+
+
+	  }
+
+	 if (PathVal == SET_PATH_A2)
+	 {
+	  /*Set Relay di ingresso a 2 stati*/
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);  //K_A_E = 1
+
+
+	  /*Da inserire un delay per attendere lo switch del relay prima di fare il check*/
+
+	  /*Lettura Status Relay a 2 stati*/
+	  CheckRelayStatusA2(ErrorStatusPath1);
+
+
+	   /* Set Relay a 3 stati */
+	 }
+
+
+	 if (PathVal2 == SET_PATH_B1)
+	  {
+		    /*Set Relay di ingresso a 2 stati*/
+         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //K_B_E = 0
+
+
+         /*Da inserire un delay per attendere lo switch del relay prima di fare il check*/
+
+         /*Lettura Status Relay a 2 stati*/
+         CheckRelayStatusB1(ErrorStatusPath2);
+
+
+         /* Set Relay a 3 stati */
+      }
+
+
+
+
+
+
+
+
+}
 
 
 static SetValue_t hw_read_get(void)
