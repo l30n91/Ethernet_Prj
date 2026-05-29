@@ -55,10 +55,11 @@ static void tcp_server_thread(void *arg);
 static void process_command(const char *cmd, char *reply, size_t reply_size);
 
 static int parse_path_value(const char *s, SetPathValue_t *value);
+static int parse_path_value2(const char *s, SetPathValue_t *value);
 static int parse_att_value(const char *s, SetValue_t *value);
 static const char *set_value_to_string(SetValue_t value);
 
-static void hw_apply_set(SetValue_t, SetPathValue_t,  ErrorStatus_t*);
+static void hw_apply_set(SetValue_t, SetPathValue_t,SetPathValue_t, ErrorStatus_t*,ErrorStatus_t* );
 static SetValue_t hw_read_get(void);
 
 static float read_3v3_voltage(void);
@@ -152,11 +153,16 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
         const char *attenuation = path +3;
 
+        const char *path2 = attenuation +3;
+
         //const char *post_attenuation = attenuation + 3;
 
         SetValue_t requestedAtt_value;
-        SetPathValue_t requestedPath_value;
-        ErrorStatus_t RelayError;
+        SetPathValue_t requestedPath_value; //A1 o A2
+        SetPathValue_t requestedPath_value2; //B1 o B2
+        ErrorStatus_t RelayErrorPath1;
+        ErrorStatus_t RelayErrorPath2;
+
         /* set_a1_30, set_a1_z*/
         //check_path -> A1/A2
         //check_attenuation -> 30,Z ecc
@@ -192,7 +198,17 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
             attenuation++; //attenuation = path + 4
         }
 
-        if (parse_path_value(path, &requestedPath_value) == 0 || parse_att_value(attenuation, &requestedAtt_value) == 0) //A1 OR A2, ritorna 1 se tutto ok valori riconosciuti
+         while (*path2 == ' ' || *path2 == '\t') /* se prima di path2 trovi spazi ecc... vai avanti*/
+         {
+            path2++; //path = cmd + 4
+         }
+
+
+
+
+        if (parse_path_value(path, &requestedPath_value) == 0 ||  /*check A1 or A2*/
+        	parse_att_value(attenuation, &requestedAtt_value) == 0 || /*check possible attenuations*/
+			parse_path_value2(path2, &requestedPath_value2) == 0) /*check B1 or B2 */
         {
             snprintf(reply, reply_size, "err:val\r\n");
             return;
@@ -201,27 +217,31 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
         /* applicazione hardware del comando ricevuto Relay managment*/
         //g_set_value = requestedPath_value;
-        hw_apply_set(requestedAtt_value, requestedPath_value, &RelayError);
+        hw_apply_set(requestedAtt_value, requestedPath_value,requestedPath_value2, &RelayErrorPath1, &RelayErrorPath2);
 
         osDelay(10);
 
         //g_get_value = hw_read_get();
 
         //if (g_get_value == g_set_value)
-        if(!RelayError)
+        if(!RelayErrorPath1 && !RelayErrorPath2)
         {
             snprintf(reply, reply_size, "ok:set\r\n");
         }
-        else if (RelayError == Err_KA_Disconnected)
+        else if ((RelayErrorPath1 == Err_KA_Disconnected) && !RelayErrorPath2)
         {
             snprintf(reply, reply_size, "err:KA disconnected\r\n");
 
         }
-        else if (RelayError == Err_KB_Disconnected)
+        else if (!RelayErrorPath1 && (RelayErrorPath2 == Err_KB_Disconnected))
         {
             snprintf(reply, reply_size, "err:KB disconnected\r\n");
-
         }
+        else if ((RelayErrorPath1 == Err_KA_Disconnected) && (RelayErrorPath2 == Err_KB_Disconnected))
+        {
+                    snprintf(reply, reply_size, "err:KB and KA disconnected\r\n");
+        }
+
         return;
     }
 
@@ -306,6 +326,15 @@ static int parse_path_value(const char *s, SetPathValue_t *value)
            return 1;
     }
 
+
+    return 0;
+}
+
+
+static int parse_path_value2(const char *s, SetPathValue_t *value)
+{
+
+
     if (strncmp(s, "B1", 2) == 0)
     {
           *value = SET_PATH_B1;
@@ -318,13 +347,34 @@ static int parse_path_value(const char *s, SetPathValue_t *value)
            return 1;
     }
 
-
-
-
-
-
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 static int parse_att_value(const char *s, SetValue_t *value)
@@ -400,7 +450,7 @@ typedef struct {
 }PathStatus_t;
 
 
-static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal, ErrorStatus_t* ErrorStatus)
+static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_t PathVal2, ErrorStatus_t* ErrorStatusPath1, ErrorStatus_t* ErrorStatusPath2)
 {
 
 
@@ -417,7 +467,7 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal, ErrorStatus_
     		  /*Da inserire un delay per attendere lo switch del relay prima di fare il check*/
 
     		  /*Lettura Status Relay a 2 stati*/
-              CheckRelayStatusA1(ErrorStatus);
+              CheckRelayStatusA1(ErrorStatusPath1);
 
     		  /* Set Relay a 3 stati */
 
@@ -433,13 +483,13 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal, ErrorStatus_
     		 /*Da inserire un delay per attendere lo switch del relay prima di fare il check*/
 
     		 /*Lettura Status Relay a 2 stati*/
-    		 CheckRelayStatusA2(ErrorStatus);
+    		 CheckRelayStatusA2(ErrorStatusPath1);
 
 
     		  /* Set Relay a 3 stati */
            }
 
-    	 if (PathVal == SET_PATH_B1)
+    	 if (PathVal2 == SET_PATH_B1)
     	  {
     	    /*Set Relay di ingresso a 2 stati*/
     	    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //K_B_E = 0
@@ -448,7 +498,7 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal, ErrorStatus_
     	    /*Da inserire un delay per attendere lo switch del relay prima di fare il check*/
 
     	    /*Lettura Status Relay a 2 stati*/
-    	    CheckRelayStatusB1(ErrorStatus);
+    	    CheckRelayStatusB1(ErrorStatusPath2);
 
 
     	     /* Set Relay a 3 stati */
