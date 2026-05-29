@@ -239,8 +239,13 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
         }
         else if ((RelayErrorPath1 == Err_KA_Disconnected) && (RelayErrorPath2 == Err_KB_Disconnected))
         {
-                    snprintf(reply, reply_size, "err:KB and KA disconnected\r\n");
+            snprintf(reply, reply_size, "err:KA and KB disconnected\r\n");
         }
+
+
+
+
+
 
         return;
     }
@@ -538,9 +543,9 @@ ErrorStatus_t* CheckRelayStatusA1(ErrorStatus_t* ErrorStatus )
 
 
 	if((PinStatus.PinStatus_KA_NC == GPIO_PIN_RESET) &&
-	  (PinStatus.PinStatus_KA_NO == GPIO_PIN_SET) &&
-	  (PinStatus.PinStatus_nFLT == GPIO_PIN_SET) &&
-	  (PinStatus.PinStatus_PGOOD == GPIO_PIN_SET))
+	  (PinStatus.PinStatus_KA_NO ==  GPIO_PIN_SET) &&
+	  (PinStatus.PinStatus_nFLT ==   GPIO_PIN_SET) &&
+	  (PinStatus.PinStatus_PGOOD ==  GPIO_PIN_SET))
 	  {
 
 
@@ -554,9 +559,9 @@ ErrorStatus_t* CheckRelayStatusA1(ErrorStatus_t* ErrorStatus )
 	  }
 
 	else if((PinStatus.PinStatus_KA_NC == GPIO_PIN_SET) &&
-		  (PinStatus.PinStatus_KA_NO == GPIO_PIN_SET) &&
-		  (PinStatus.PinStatus_nFLT == GPIO_PIN_SET) &&
-		  (PinStatus.PinStatus_PGOOD == GPIO_PIN_SET))
+		  (PinStatus.PinStatus_KA_NO ==   GPIO_PIN_SET) &&
+		  (PinStatus.PinStatus_nFLT ==    GPIO_PIN_SET) &&
+		  (PinStatus.PinStatus_PGOOD ==   GPIO_PIN_SET))
 
       {
 
@@ -572,9 +577,9 @@ ErrorStatus_t* CheckRelayStatusA1(ErrorStatus_t* ErrorStatus )
 
 	  }
 
-	else if((PinStatus.PinStatus_KA_NC == GPIO_PIN_RESET) &&
+	else if((PinStatus.PinStatus_KA_NC ==   GPIO_PIN_RESET) &&
 			  (PinStatus.PinStatus_KA_NO == GPIO_PIN_RESET) &&
-			  (PinStatus.PinStatus_nFLT == GPIO_PIN_SET) &&
+			  (PinStatus.PinStatus_nFLT ==  GPIO_PIN_SET) &&
 			  (PinStatus.PinStatus_PGOOD == GPIO_PIN_SET))
 
 	      {
@@ -591,9 +596,9 @@ ErrorStatus_t* CheckRelayStatusA1(ErrorStatus_t* ErrorStatus )
 
 		  }
 
-	else if((PinStatus.PinStatus_KA_NC == GPIO_PIN_SET) &&
+	else if((PinStatus.PinStatus_KA_NC ==       GPIO_PIN_SET) &&
 				  (PinStatus.PinStatus_KA_NO == GPIO_PIN_SET) &&
-				  (PinStatus.PinStatus_nFLT == GPIO_PIN_RESET) &&
+				  (PinStatus.PinStatus_nFLT ==  GPIO_PIN_RESET) &&
 				  (PinStatus.PinStatus_PGOOD == GPIO_PIN_RESET))
 
 		      {
@@ -627,15 +632,15 @@ ErrorStatus_t* CheckRelayStatusB1(ErrorStatus_t* ErrorStatus )
 
 
 	if((PinStatus.PinStatus_KB_NC == GPIO_PIN_RESET) &&
-	  (PinStatus.PinStatus_KB_NO == GPIO_PIN_SET) &&
-	  (PinStatus.PinStatus_nFLT == GPIO_PIN_SET) &&
-	  (PinStatus.PinStatus_PGOOD == GPIO_PIN_SET))
+	  (PinStatus.PinStatus_KB_NO ==  GPIO_PIN_SET) &&
+	  (PinStatus.PinStatus_nFLT ==   GPIO_PIN_SET) &&
+	  (PinStatus.PinStatus_PGOOD ==  GPIO_PIN_SET))
 	  {
 
 
 		 HAL_GPIO_WritePin(GPIOG, GPIO_PIN_10, GPIO_PIN_RESET);  //L_LB1_R =0
-		 HAL_GPIO_WritePin(GPIOH, GPIO_PIN_2, GPIO_PIN_SET);    //L_LB1_G = 1
-		 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_6, GPIO_PIN_RESET);  //L_LB2_R = 0
+		 HAL_GPIO_WritePin(GPIOH, GPIO_PIN_2,  GPIO_PIN_SET);    //L_LB1_G = 1
+		 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_6,  GPIO_PIN_RESET);  //L_LB2_R = 0
 		 HAL_GPIO_WritePin(GPIOG, GPIO_PIN_15, GPIO_PIN_RESET); //L_LB2_G = 0
 
 		*ErrorStatus = Err_ok;
@@ -643,17 +648,17 @@ ErrorStatus_t* CheckRelayStatusB1(ErrorStatus_t* ErrorStatus )
 	  }
 
 	else if((PinStatus.PinStatus_KB_NC == GPIO_PIN_SET) &&
-		  (PinStatus.PinStatus_KB_NO == GPIO_PIN_SET) &&
-		  (PinStatus.PinStatus_nFLT == GPIO_PIN_SET) &&
-		  (PinStatus.PinStatus_PGOOD == GPIO_PIN_SET))
+		  (PinStatus.PinStatus_KB_NO ==   GPIO_PIN_SET) &&
+		  (PinStatus.PinStatus_nFLT ==    GPIO_PIN_SET) &&
+		  (PinStatus.PinStatus_PGOOD ==   GPIO_PIN_SET))
 
       {
 
 		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //nSHTDN=0
 
 		 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_SET);  //L_LB1_R =1
-	     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);    //L_LB1_G = 0
-		 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);  //L_LB2_R = 0
+	     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2,  GPIO_PIN_RESET);    //L_LB1_G = 0
+		 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6,  GPIO_PIN_RESET);  //L_LB2_R = 0
 		 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //L_LB2_G = 0
 
 
@@ -661,9 +666,9 @@ ErrorStatus_t* CheckRelayStatusB1(ErrorStatus_t* ErrorStatus )
 
 	  }
 
-	else if((PinStatus.PinStatus_KB_NC == GPIO_PIN_RESET) &&
+	else if((PinStatus.PinStatus_KB_NC ==   GPIO_PIN_RESET) &&
 			  (PinStatus.PinStatus_KB_NO == GPIO_PIN_RESET) &&
-			  (PinStatus.PinStatus_nFLT == GPIO_PIN_SET) &&
+			  (PinStatus.PinStatus_nFLT ==  GPIO_PIN_SET) &&
 			  (PinStatus.PinStatus_PGOOD == GPIO_PIN_SET))
 
 	      {
@@ -671,8 +676,8 @@ ErrorStatus_t* CheckRelayStatusB1(ErrorStatus_t* ErrorStatus )
 			 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //nSHTDN=0
 
 			 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_SET);  //L_LB1_R =1
-		     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);    //L_LB1_G = 0
-			 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);  //L_LB2_R = 1
+		     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2,  GPIO_PIN_RESET);    //L_LB1_G = 0
+			 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6,  GPIO_PIN_SET);  //L_LB2_R = 1
 			 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET); //L_LB2_G = 1
 
 
