@@ -41,6 +41,18 @@ typedef enum
 }ErrorStatus_t;
 
 
+typedef struct {
+	GPIO_PinState PinStatus_KA_NC;
+	GPIO_PinState PinStatus_KA_NO;
+	GPIO_PinState PinStatus_KB_NC;
+    GPIO_PinState PinStatus_KB_NO;
+    GPIO_PinState PinStatus_nFLT;
+	GPIO_PinState PinStatus_PGOOD;
+
+}PathStatus_t;
+
+
+
 static SetPathValue_t g_set_value = SET_VAL_0;
 static SetPathValue_t g_get_value = SET_VAL_0;
 
@@ -151,10 +163,8 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
     if (strncmp(cmd, "set", 3) == 0) //* confronta le prime tre locazioni del buffer*/
     {
         const char *path = cmd + 3;
-
-        const char *attenuation = path +3;
-
-        const char *path2 = attenuation +3;
+        const char *path2 = path +3;
+        const char *attenuation = path2 +3;
 
         //const char *post_attenuation = attenuation + 3;
 
@@ -184,25 +194,27 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 		)
 
         {
-        		snprintf(reply, reply_size, "err:val incorrect spaces\r\n");
-        		return;
+           snprintf(reply, reply_size, "err:val incorrect spaces\r\n");
+           return;
         }
 
 
         while (*path == ' ' || *path == '\t') /* se prima di path trovi spazi ecc... vai avanti*/
         {
-            path++; //path = cmd + 4
-        }
-
-        while (*attenuation == ' ' || *attenuation == '\t') /* se prima di attenuation trovi spazi ecc... vai avanti*/
-        {
-            attenuation++; //attenuation = path + 4
+            path++;
         }
 
          while (*path2 == ' ' || *path2 == '\t') /* se prima di path2 trovi spazi ecc... vai avanti*/
          {
-            path2++; //path = cmd + 4
+            path2++;
          }
+
+
+        while (*attenuation == ' ' || *attenuation == '\t') /* se prima di attenuation trovi spazi ecc... vai avanti*/
+        {
+            attenuation++;
+        }
+
 
 
 
@@ -356,33 +368,6 @@ static int parse_path_value2(const char *s, SetPathValue_t *value)
     return 0;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 static int parse_att_value(const char *s, SetValue_t *value)
 {
     if (strncmp(s, "0", 1) == 0)
@@ -443,19 +428,6 @@ static const char *set_value_to_string(SetValue_t value)
 }
 
 
-
-
-typedef struct {
-	GPIO_PinState PinStatus_KA_NC;
-	GPIO_PinState PinStatus_KA_NO;
-	GPIO_PinState PinStatus_KB_NC;
-    GPIO_PinState PinStatus_KB_NO;
-    GPIO_PinState PinStatus_nFLT;
-	GPIO_PinState PinStatus_PGOOD;
-
-}PathStatus_t;
-
-
 static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_t PathVal2, ErrorStatus_t* ErrorStatusPath1, ErrorStatus_t* ErrorStatusPath2)
 {
 
@@ -463,31 +435,30 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET); //nSHDN=1
 	switch (AttVal)
     {
-    case SET_VAL_0:
 
+		case SET_VAL_0:
+			 CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+		break;
 
-      CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+		case SET_VAL_30:
+			 CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+		break;
 
+		case SET_VAL_130:
+			CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+		break;
 
+		case SET_VAL_155:
+			CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+		break;
 
-    	 break;
+		case SET_VAL_H:
+			CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+		break;
 
+		default:
 
-
-    case SET_VAL_30:
-        break;
-
-    case SET_VAL_130:
-    	break;
-
-    case SET_VAL_155:
-        break;
-
-    case SET_VAL_H:
-        break;
-
-    default:
-        break;
+		break;
     }
 }
 
