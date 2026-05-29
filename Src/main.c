@@ -596,7 +596,7 @@ static void GPIO_Config(void)
 void RelayInitConfig(void)
 {
 
-    /* Current configuration: ERR:ok*/
+    /* Current configuration: ERR:A1 ok A2 SHORT*/
 
 	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);           /*K_A_E */
 	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);          /*KA_NO */

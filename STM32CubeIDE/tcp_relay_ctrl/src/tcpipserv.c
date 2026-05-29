@@ -36,7 +36,8 @@ typedef enum
 	Err_KA_Short,
 	Err_KB_Disconnected,
     Err_KB_Short,
-    Err_PWR
+    Err_PWR,
+	Err_InvalidConfig
 
 }ErrorStatus_t;
 
@@ -262,7 +263,12 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
         {
              snprintf(reply, reply_size, "err:KB Short, KB disconnected\r\n");
         }
-        /*to complete... */
+        else if (RelayErrorPath1 == Err_InvalidConfig || RelayErrorPath2 == Err_InvalidConfig )
+        {
+
+        	snprintf(reply, reply_size, "err:Invalid Feedback\r\n");
+        }
+        /*to be completed... */
 
         return;
     }
@@ -466,6 +472,7 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_
     }
 }
 
+
 ErrorStatus_t* CheckRelayStatusA1(ErrorStatus_t* ErrorStatus )
 {
 
@@ -551,7 +558,13 @@ ErrorStatus_t* CheckRelayStatusA1(ErrorStatus_t* ErrorStatus )
 
 			  }
 
+	     else
+		    {
 
+		       HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //nSHTDN=0
+		       *ErrorStatus = Err_InvalidConfig;
+
+		     }
       return ErrorStatus;
 
 }
@@ -639,7 +652,13 @@ ErrorStatus_t* CheckRelayStatusB1(ErrorStatus_t* ErrorStatus )
 				*ErrorStatus = Err_PWR;
 
 			  }
+	else
+		{
 
+			   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //nSHTDN=0
+		       *ErrorStatus = Err_InvalidConfig;
+
+		 }
 
       return ErrorStatus;
 
@@ -729,6 +748,19 @@ ErrorStatus_t* CheckRelayStatusA2(ErrorStatus_t* ErrorStatus )
 
 			  }
 
+	else
+	{
+
+				     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //nSHTDN=0
+	                 *ErrorStatus = Err_InvalidConfig;
+
+	 }
+
+
+
+
+
+
     return ErrorStatus;
 
 }
@@ -817,8 +849,17 @@ ErrorStatus_t* CheckRelayStatusB2(ErrorStatus_t* ErrorStatus )
 
 			  }
 
+	else
+		     {
 
-      return ErrorStatus;
+		       HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //nSHTDN=0
+		       *ErrorStatus = Err_InvalidConfig;
+
+		     }
+
+
+
+	return ErrorStatus;
 
 }
 

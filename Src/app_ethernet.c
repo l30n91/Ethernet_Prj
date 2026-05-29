@@ -33,7 +33,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 #if LWIP_DHCP
-#define MAX_DHCP_TRIES  4
+#define MAX_DHCP_TRIES  0
 __IO uint8_t DHCP_state = DHCP_OFF;
 #endif
 
