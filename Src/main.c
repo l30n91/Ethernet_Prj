@@ -596,15 +596,15 @@ static void GPIO_Config(void)
 void RelayInitConfig(void)
 {
 
-
+    /* Current configuration: ERR:ok*/
 
 	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);           /*K_A_E */
-	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);            /*KA_NO */
-	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);           /*KA_NC */
+	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);          /*KA_NO */
+	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);         /*KA_NC */
 	 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, GPIO_PIN_RESET);        /*K_B_E */
-	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_2, GPIO_PIN_SET);         /*KB_NC */
+	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_2, GPIO_PIN_RESET);         /*KB_NC */
 	 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_5, GPIO_PIN_SET);        /*KB_NO */
-	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);    /*nSHTDN*/
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15,GPIO_PIN_RESET);    /*nSHTDN*/
 	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_5, GPIO_PIN_SET);      /*nFLT  */
 	 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);     /*PGOOD */
 

@@ -254,7 +254,15 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
         {
             snprintf(reply, reply_size, "err:KA and KB disconnected\r\n");
         }
-
+        else if ((RelayErrorPath1 == Err_KA_Short) && (RelayErrorPath2 == Err_KB_Disconnected))
+        {
+            snprintf(reply, reply_size, "err:KA Short, KB disconnected\r\n");
+        }
+        else if ((RelayErrorPath1 == Err_KA_Disconnected) && (RelayErrorPath2 == Err_KB_Short))
+        {
+             snprintf(reply, reply_size, "err:KB Short, KB disconnected\r\n");
+        }
+        /*to complete... */
 
         return;
     }
