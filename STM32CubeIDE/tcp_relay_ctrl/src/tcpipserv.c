@@ -946,11 +946,12 @@ ErrorStatus_t* CheckRelayStatusAttSRT(ErrorStatus_t* ErrorStatus)
 
 
 
-	if (!((PinStatus.nFLT & 0x01)  &  (PinStatus.PGOOD & 0x01)))
-	   {
-		   *ErrorStatus= Se_ERR;
-	        return ErrorStatus;
-	   }
+     	if ( (PinStatus.nFLT != GPIO_PIN_SET) ||
+	         (PinStatus.PGOOD != GPIO_PIN_SET))
+	    {
+	      *ErrorStatus = Se_ERR;
+	       return ErrorStatus;
+	    }
 
 	     if ((PinStatus.K_SA_S1 == GPIO_PIN_RESET)&&
 			 (PinStatus.K_SA_S2 == GPIO_PIN_SET)&&
@@ -966,6 +967,10 @@ ErrorStatus_t* CheckRelayStatusAttSRT(ErrorStatus_t* ErrorStatus)
 	     }
 	     else
 	     {
+
+
+	    	 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_SRT_G =1 */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,  GPIO_PIN_SET); /* L_SRT_R =0 */
 	    	 *ErrorStatus= Se_ERR;
 	     }
 
@@ -1168,14 +1173,6 @@ void SetAttenuationRelayPath(GPIO_PinState K_SA_E1,
 	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_8,  K_HB_E); /* K_HB_E */
 
 }
-
-
-
-
-
-
-
-
 
 
 
