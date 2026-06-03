@@ -1106,7 +1106,34 @@ void RelayInitConfig(void)
 	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_5, GPIO_PIN_SET);      /*nFLT  */
 	 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);     /*PGOOD */
 
-}
+
+
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,  GPIO_PIN_RESET); /* K_SA_E1 */
+     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8,  GPIO_PIN_RESET); /* K_SA_E2 */
+     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET); /* K_SA_E3 */
+
+     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET); /* K_SA_S1 */
+     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6,  GPIO_PIN_RESET); /* K_SA_S2 */
+     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2,  GPIO_PIN_RESET); /* K_SA_S3 */
+
+     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET); /* K_SB_E1 */
+     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET); /* K_SB_E2 */
+     HAL_GPIO_WritePin(GPIOF, GPIO_PIN_14, GPIO_PIN_RESET); /* K_SB_E3 */
+
+     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET); /* K_SB_S1 */
+     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7,  GPIO_PIN_RESET); /* K_SB_S2 */
+     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_9,  GPIO_PIN_RESET); /* K_SB_S3 */
+
+     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9,  GPIO_PIN_RESET); /* K_HA_E */
+     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4,  GPIO_PIN_RESET); /* K_HA_NC */
+     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET); /* K_HA_NO */
+
+     HAL_GPIO_WritePin(GPIOF, GPIO_PIN_8,  GPIO_PIN_RESET); /* K_HB_E */
+     HAL_GPIO_WritePin(GPIOG, GPIO_PIN_1,  GPIO_PIN_RESET); /* K_HB_NC */
+     HAL_GPIO_WritePin(GPIOF, GPIO_PIN_9,  GPIO_PIN_RESET); /* K_HB_NO */
+
+ }
+
 void LedInitConfig(void)
 {
 
@@ -1119,6 +1146,61 @@ void LedInitConfig(void)
 	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_10,GPIO_PIN_RESET);    /*L_LB1_R*/
 	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_6, GPIO_PIN_RESET);   /*L_LB2_R*/
 	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_15, GPIO_PIN_RESET); /*L_LB2_G*/
+
+
+
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_SRT_G */
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_SRT_R */
+
+    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_LX1_G */
+    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_LX1_R */
+
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET); /* L_LX2_G */
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_LX2_R */
+
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_RESET); /* L_LX3_G */
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_RESET); /* L_LX3_R */
+
+    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_3,  GPIO_PIN_RESET); /* L_OPN_G */
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_OPN_R */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 }
