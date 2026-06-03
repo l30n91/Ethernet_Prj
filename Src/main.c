@@ -1165,44 +1165,6 @@ void LedInitConfig(void)
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_OPN_R */
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
 
 

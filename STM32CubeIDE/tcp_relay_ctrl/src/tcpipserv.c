@@ -53,6 +53,22 @@ typedef struct {
 }PathStatus_t;
 
 
+typedef struct
+{
+	GPIO_PinState K_SA_E1;
+	GPIO_PinState K_SA_E2;
+	GPIO_PinState K_SA_E3;
+
+	GPIO_PinState K_SB_E1;
+	GPIO_PinState K_SB_E2;
+	GPIO_PinState K_SB_E;
+
+	GPIO_PinState K_HA_E;
+	GPIO_PinState K_HB_E;
+
+
+}RelayThreeStatesPin_t;
+
 
 static SetPathValue_t g_set_value = SET_VAL_0;
 static SetPathValue_t g_get_value = SET_VAL_0;
@@ -63,6 +79,14 @@ ErrorStatus_t* CheckRelayStatusB1(ErrorStatus_t*);
 ErrorStatus_t* CheckRelayStatusB2(ErrorStatus_t*);
 static void CheckPathVal(SetPathValue_t,SetPathValue_t,ErrorStatus_t*, ErrorStatus_t*);
 static void ErrorManager(ErrorStatus_t,ErrorStatus_t, char *, size_t);
+void SetRelayThreeStates(GPIO_PinState,
+		                 GPIO_PinState,
+						 GPIO_PinState,
+						 GPIO_PinState,
+						 GPIO_PinState,
+						 GPIO_PinState,
+						 GPIO_PinState,
+						 GPIO_PinState);
 
 
 
@@ -418,26 +442,68 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_
 
 
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET); //nSHDN=1
+
 	switch (AttVal)
     {
 
 		case SET_VAL_0:
-			 CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+			SetRelayThreeStates(GPIO_PIN_SET,  /* K_SA_E1 */
+					            GPIO_PIN_SET,  /* K_SA_E2 */
+								GPIO_PIN_SET,  /* K_SA_E3 */
+								GPIO_PIN_SET,  /* K_SB_E1 */
+								GPIO_PIN_SET,  /* K_SB_E2 */
+								GPIO_PIN_SET,   /* K_SB_E3 */
+								GPIO_PIN_SET,   /* K_HA_E */
+								GPIO_PIN_SET); /* K_HB_E */
+
+		   CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
 		break;
 
 		case SET_VAL_30:
-			 CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+			SetRelayThreeStates(GPIO_PIN_SET,  /* K_SA_E1 */
+					            GPIO_PIN_SET,  /* K_SA_E2 */
+								GPIO_PIN_SET,  /* K_SA_E3 */
+								GPIO_PIN_SET,  /* K_SB_E1 */
+								GPIO_PIN_SET,  /* K_SB_E2 */
+								GPIO_PIN_SET,   /* K_SB_E3 */
+								GPIO_PIN_SET,   /* K_HA_E */
+								GPIO_PIN_SET); /* K_HB_E */
+			CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
 		break;
 
 		case SET_VAL_130:
+			SetRelayThreeStates(GPIO_PIN_SET,  /* K_SA_E1 */
+					            GPIO_PIN_SET,  /* K_SA_E2 */
+								GPIO_PIN_SET,  /* K_SA_E3 */
+								GPIO_PIN_SET,  /* K_SB_E1 */
+								GPIO_PIN_SET,  /* K_SB_E2 */
+								GPIO_PIN_SET,   /* K_SB_E3 */
+								GPIO_PIN_SET,   /* K_HA_E */
+								GPIO_PIN_SET); /* K_HB_E */
 			CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
 		break;
 
 		case SET_VAL_155:
+			SetRelayThreeStates(GPIO_PIN_SET,  /* K_SA_E1 */
+					            GPIO_PIN_SET,  /* K_SA_E2 */
+								GPIO_PIN_SET,  /* K_SA_E3 */
+								GPIO_PIN_SET,  /* K_SB_E1 */
+								GPIO_PIN_SET,  /* K_SB_E2 */
+								GPIO_PIN_SET,   /* K_SB_E3 */
+								GPIO_PIN_SET,   /* K_HA_E */
+								GPIO_PIN_SET); /* K_HB_E */
 			CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
 		break;
 
 		case SET_VAL_H:
+			SetRelayThreeStates(GPIO_PIN_SET,  /* K_SA_E1 */
+					            GPIO_PIN_SET,  /* K_SA_E2 */
+								GPIO_PIN_SET,  /* K_SA_E3 */
+								GPIO_PIN_SET,  /* K_SB_E1 */
+								GPIO_PIN_SET,  /* K_SB_E2 */
+								GPIO_PIN_SET,   /* K_SB_E3 */
+								GPIO_PIN_SET,   /* K_HA_E */
+								GPIO_PIN_SET); /* K_HB_E */
 			CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
 		break;
 
@@ -840,15 +906,22 @@ ErrorStatus_t* CheckRelayStatusB2(ErrorStatus_t* ErrorStatus )
 
 static void CheckPathVal(SetPathValue_t PathVal,SetPathValue_t PathVal2, ErrorStatus_t* ErrorStatusPath1, ErrorStatus_t* ErrorStatusPath2)
 {
+
+
+
 	if (PathVal == SET_PATH_A1)
 	 {
 	     /*Set Relay di ingresso a 2 stati*/
 	     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //K_A_E = 0
 
+
+
 	     /*Da inserire un delay per attendere lo switch del relay prima di fare il check*/
 
 	     /*Lettura Status Relay a 2 stati*/
 	     CheckRelayStatusA1(ErrorStatusPath1);
+
+
 
 	     /* Set Relay a 3 stati */
 
@@ -992,6 +1065,30 @@ static void ErrorManager(ErrorStatus_t RelayErrorPath1,ErrorStatus_t RelayErrorP
 
 
 
+
+void SetRelayThreeStates(GPIO_PinState K_SA_E1,
+						 GPIO_PinState K_SA_E2,
+						 GPIO_PinState K_SA_E3,
+						 GPIO_PinState K_SB_E1,
+						 GPIO_PinState K_SB_E2,
+						 GPIO_PinState K_SB_E3,
+						 GPIO_PinState K_HA_E,
+						 GPIO_PinState K_HB_E)
+{
+
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,  K_SA_E1); /* K_SA_E1 */
+	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8,  K_SA_E2); /* K_SA_E2 */
+	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, K_SA_E3); /* K_SA_E3 */
+
+	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, K_SB_E1); /* K_SB_E1 */
+	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, K_SB_E2); /* K_SB_E2 */
+	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_14, K_SB_E3); /* K_SB_E3 */
+
+
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9,  K_HA_E); /* K_HA_E */
+	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_8,  K_HB_E); /* K_HB_E */
+
+}
 
 
 
