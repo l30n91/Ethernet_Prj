@@ -547,7 +547,184 @@ static void GPIO_Config(void)
 
 
 
-      /*=========================================================
+     /*=========================================================
+                      PE2 -> L_SRT_G
+       =========================================================*/
+     /*fill the structure before the pin configuration, then pass
+         both the pointers #define GPIOH ((GPIO_TypeDef *) GPIOH_BASE)
+         and &GPIO_InitStruct
+        */
+     GPIO_InitStruct.Pin = GPIO_PIN_2;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+
+
+     /*=========================================================
+                      PD7 -> L_SRT_R
+       =========================================================*/
+     /*fill the structure before the pin configuration, then pass
+         both the pointers #define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)
+         and &GPIO_InitStruct
+        */
+     GPIO_InitStruct.Pin = GPIO_PIN_7;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+
+
+
+     /*=========================================================
+                       PF6 -> L_LX1_G
+        =========================================================*/
+     /*fill the structure before the pin configuration, then pass
+          both the pointers #define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)
+          and &GPIO_InitStruct
+         */
+     GPIO_InitStruct.Pin = GPIO_PIN_6;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+
+
+     /*=========================================================
+                       PF7 -> L_LX1_R
+        =========================================================*/
+     /*fill the structure before the pin configuration, then pass
+       both the pointers #define GPIOF ((GPIO_TypeDef *) GPIOF_BASE)
+       and &GPIO_InitStruct
+         */
+     GPIO_InitStruct.Pin = GPIO_PIN_7;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+
+
+
+
+     /*=========================================================
+                        PC11 -> L_LX2_G
+         =========================================================*/
+     /*fill the structure before the pin configuration, then pass
+        both the pointers #define GPIOF ((GPIO_TypeDef *) GPIOC_BASE)
+        and &GPIO_InitStruct
+          */
+     GPIO_InitStruct.Pin = GPIO_PIN_11;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+
+
+
+
+     /*=========================================================
+                         PD2 -> L_LX2_R
+          =========================================================*/
+     /*fill the structure before the pin configuration, then pass
+         both the pointers #define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)
+         and &GPIO_InitStruct
+           */
+     GPIO_InitStruct.Pin = GPIO_PIN_2;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+
+
+
+
+
+     /*=========================================================
+                       PC10 -> L_LX3_G
+        =========================================================*/
+     /*fill the structure before the pin configuration, then pass
+       both the pointers #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)
+       and &GPIO_InitStruct
+         */
+     GPIO_InitStruct.Pin = GPIO_PIN_10;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+
+
+
+     /*=========================================================
+                       PC12 -> L_LX3_R
+        =========================================================*/
+     /*fill the structure before the pin configuration, then pass
+       both the pointers #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)
+       and &GPIO_InitStruct
+         */
+     GPIO_InitStruct.Pin = GPIO_PIN_12;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+
+
+     /*=========================================================
+                       PG3 -> L_OPN_G
+        =========================================================*/
+     /*fill the structure before the pin configuration, then pass
+       both the pointers #define GPIOG ((GPIO_TypeDef *) GPIOG_BASE)
+       and &GPIO_InitStruct
+         */
+     GPIO_InitStruct.Pin = GPIO_PIN_3;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+
+
+
+     /*=========================================================
+                        PD6 -> L_OPN_R
+         =========================================================*/
+     /*fill the structure before the pin configuration, then pass
+        both the pointers #define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)
+        and &GPIO_InitStruct
+          */
+     GPIO_InitStruct.Pin = GPIO_PIN_6;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+
+
+
+
+
+
+
+
+
+     /*=========================================================
                       PD5 -> nFLT
       =======================================================*/
       /*fill the structure before the pin configuration, then pass
