@@ -79,7 +79,7 @@ ErrorStatus_t* CheckRelayStatusB1(ErrorStatus_t*);
 ErrorStatus_t* CheckRelayStatusB2(ErrorStatus_t*);
 static void CheckPathVal(SetPathValue_t,SetPathValue_t,ErrorStatus_t*, ErrorStatus_t*);
 static void ErrorManager(ErrorStatus_t,ErrorStatus_t, char *, size_t);
-void SetRelayThreeStates(GPIO_PinState,
+void SetAttenuationRelayPath(GPIO_PinState,
 		                 GPIO_PinState,
 						 GPIO_PinState,
 						 GPIO_PinState,
@@ -447,12 +447,12 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_
     {
 
 		case SET_VAL_0:
-			SetRelayThreeStates(GPIO_PIN_SET,  /* K_SA_E1 */
-					            GPIO_PIN_SET,  /* K_SA_E2 */
-								GPIO_PIN_SET,  /* K_SA_E3 */
+			SetAttenuationRelayPath(GPIO_PIN_SET,  /* K_SA_E1 */
+					            GPIO_PIN_RESET,  /* K_SA_E2 */
+								GPIO_PIN_RESET,  /* K_SA_E3 */
 								GPIO_PIN_SET,  /* K_SB_E1 */
-								GPIO_PIN_SET,  /* K_SB_E2 */
-								GPIO_PIN_SET,   /* K_SB_E3 */
+								GPIO_PIN_RESET,  /* K_SB_E2 */
+								GPIO_PIN_RESET,   /* K_SB_E3 */
 								GPIO_PIN_SET,   /* K_HA_E */
 								GPIO_PIN_SET); /* K_HB_E */
 
@@ -460,7 +460,7 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_
 		break;
 
 		case SET_VAL_30:
-			SetRelayThreeStates(GPIO_PIN_SET,  /* K_SA_E1 */
+			SetAttenuationRelayPath(GPIO_PIN_SET,  /* K_SA_E1 */
 					            GPIO_PIN_SET,  /* K_SA_E2 */
 								GPIO_PIN_SET,  /* K_SA_E3 */
 								GPIO_PIN_SET,  /* K_SB_E1 */
@@ -472,7 +472,7 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_
 		break;
 
 		case SET_VAL_130:
-			SetRelayThreeStates(GPIO_PIN_SET,  /* K_SA_E1 */
+			SetAttenuationRelayPath(GPIO_PIN_SET,  /* K_SA_E1 */
 					            GPIO_PIN_SET,  /* K_SA_E2 */
 								GPIO_PIN_SET,  /* K_SA_E3 */
 								GPIO_PIN_SET,  /* K_SB_E1 */
@@ -484,7 +484,7 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_
 		break;
 
 		case SET_VAL_155:
-			SetRelayThreeStates(GPIO_PIN_SET,  /* K_SA_E1 */
+			SetAttenuationRelayPath(GPIO_PIN_SET,  /* K_SA_E1 */
 					            GPIO_PIN_SET,  /* K_SA_E2 */
 								GPIO_PIN_SET,  /* K_SA_E3 */
 								GPIO_PIN_SET,  /* K_SB_E1 */
@@ -496,7 +496,7 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_
 		break;
 
 		case SET_VAL_H:
-			SetRelayThreeStates(GPIO_PIN_SET,  /* K_SA_E1 */
+			SetAttenuationRelayPath(GPIO_PIN_SET,  /* K_SA_E1 */
 					            GPIO_PIN_SET,  /* K_SA_E2 */
 								GPIO_PIN_SET,  /* K_SA_E3 */
 								GPIO_PIN_SET,  /* K_SB_E1 */
@@ -1066,7 +1066,7 @@ static void ErrorManager(ErrorStatus_t RelayErrorPath1,ErrorStatus_t RelayErrorP
 
 
 
-void SetRelayThreeStates(GPIO_PinState K_SA_E1,
+void SetAttenuationRelayPath(GPIO_PinState K_SA_E1,
 						 GPIO_PinState K_SA_E2,
 						 GPIO_PinState K_SA_E3,
 						 GPIO_PinState K_SB_E1,
