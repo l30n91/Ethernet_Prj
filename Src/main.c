@@ -25,6 +25,7 @@
 #include "lwip/tcpip.h"
 #include "app_ethernet.h"
 #include "httpserver-netconn.h"
+#include "string.h"
 #ifdef USE_LCD
 #include "lcd_log.h"
 #endif
@@ -40,6 +41,9 @@ static void SystemClock_Config(void);
 static void StartThread(void const * argument);
 static void BSP_Config(void);
 static void Netif_Config(void);
+static void GPIO_Config(void);
+static void RelayInitConfig(void);
+static void LedInitConfig(void);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -57,13 +61,19 @@ int main(void)
        - Set NVIC Group Priority to 4
        - Global MSP (MCU Support Package) initialization
      */
-  HAL_Init();  
+
+  HAL_Init();
   
   /* Configure the system clock to 180 MHz */
   SystemClock_Config();
   
+
+  GPIO_Config();
+
   /* Initialize LCD and LEDs */
   BSP_Config();
+
+
 
   /* Init thread */
 #if defined(__GNUC__)
@@ -250,6 +260,384 @@ static void SystemClock_Config(void)
    while(1) {};
   }
 }
+
+
+static void GPIO_Config(void)
+{
+    GPIO_InitTypeDef GPIO_InitStruct;
+
+    /*=========================================================
+      CLOCK ENABLE
+    =========================================================*/
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+    __HAL_RCC_GPIOE_CLK_ENABLE();
+    __HAL_RCC_GPIOF_CLK_ENABLE();
+    __HAL_RCC_GPIOG_CLK_ENABLE();
+    __HAL_RCC_GPIOH_CLK_ENABLE();
+    /*=========================================================
+      RESET STRUCT
+    =========================================================*/
+    memset(&GPIO_InitStruct, 0, sizeof(GPIO_InitStruct));
+
+
+
+    /*=========================================================
+                     PA4 -> L_LA2_G
+    =========================================================*/
+    /*fill the structure before the pin configuration, then pass
+       both the pointers #define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)
+       and &GPIO_InitStruct
+      */
+    GPIO_InitStruct.Pin = GPIO_PIN_4;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+
+
+
+    /*=========================================================
+                         PA4 -> L_LB2_G
+     =========================================================*/
+     /*fill the structure before the pin configuration, then pass
+        both the pointers #define GPIOG ((GPIO_TypeDef *) GPIOG_BASE)
+        and &GPIO_InitStruct
+       */
+     GPIO_InitStruct.Pin = GPIO_PIN_15;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOG, GPIO_PIN_15, GPIO_PIN_RESET);
+
+
+
+   /*=========================================================
+                     PG15 -> K_A_E
+    =========================================================*/
+     /*fill the structure before the pin configuration, then pass
+       both the pointers #define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)
+       and &GPIO_InitStruct
+      */
+     GPIO_InitStruct.Pin = GPIO_PIN_6;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
+
+
+     /*=========================================================
+                          PE4 -> K_B_E
+      =========================================================*/
+      /*fill the structure before the pin configuration, then pass
+        both the pointers #define GPIOE ((GPIO_TypeDef *) GPIOE_BASE)
+        and &GPIO_InitStruct
+       */
+      GPIO_InitStruct.Pin = GPIO_PIN_4;
+      GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+      GPIO_InitStruct.Pull = GPIO_NOPULL;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+      HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+      HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, GPIO_PIN_RESET);
+
+
+
+
+
+
+
+     /*=========================================================
+                   PA15 -> nSHTDN
+     =========================================================*/
+     /*fill the structure before the pin configuration, then pass
+       both the pointers #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)
+       and &GPIO_InitStruct
+      */
+     GPIO_InitStruct.Pin = GPIO_PIN_15;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
+
+
+
+     /*=========================================================
+                   PB6 -> K_A_NO
+     =========================================================*/
+     /*fill the structure before the pin configuration, then pass
+       both the pointers #define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)
+       and &GPIO_InitStruct
+      */
+     GPIO_InitStruct.Pin = GPIO_PIN_6;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+
+
+     /*=========================================================
+                        PE5 -> K_B_NO
+     =========================================================*/
+     /*fill the structure before the pin configuration, then pass
+       both the pointers #define GPIOE ((GPIO_TypeDef *) GPIOE_BASE)
+       and &GPIO_InitStruct
+      */
+     GPIO_InitStruct.Pin = GPIO_PIN_5;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_5, GPIO_PIN_SET);
+
+
+
+
+     /*=========================================================
+                      PC2 -> L_LA2_R
+      =======================================================*/
+     /*fill the structure before the pin configuration, then pass
+       both the pointers #define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)
+       and &GPIO_InitStruct
+      */
+      GPIO_InitStruct.Pin = GPIO_PIN_2;
+      GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+      GPIO_InitStruct.Pull = GPIO_NOPULL;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+      HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);
+
+
+
+     /*=========================================================
+                           PE6 -> L_LB2_R
+      =======================================================*/
+     /*fill the structure before the pin configuration, then pass
+       both the pointers #define GPIOE ((GPIO_TypeDef *) GPIOE_BASE)
+       and &GPIO_InitStruct
+      */
+     GPIO_InitStruct.Pin = GPIO_PIN_6;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_6, GPIO_PIN_RESET);
+
+
+
+     /*=========================================================
+                     PC7 -> K_A_NC
+     =======================================================*/
+     /*fill the structure before the pin configuration, then pass
+      both the pointers #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)
+      and &GPIO_InitStruct
+     */
+     GPIO_InitStruct.Pin = GPIO_PIN_7;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
+
+     /*=========================================================
+                         PF2 -> K_B_NC
+     =======================================================*/
+     /*fill the structure before the pin configuration, then pass
+      both the pointers #define GPIOF ((GPIO_TypeDef *) GPIOF_BASE)
+      and &GPIO_InitStruct
+     */
+     GPIO_InitStruct.Pin = GPIO_PIN_2;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOF, GPIO_PIN_2, GPIO_PIN_SET);
+
+
+
+     /*=========================================================
+                 PD3 -> L_LA1_R
+      =======================================================*/
+     /*fill the structure before the pin configuration, then pass
+       both the pointers #define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)
+       and &GPIO_InitStruct
+      */
+     GPIO_InitStruct.Pin = GPIO_PIN_3;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, GPIO_PIN_RESET);
+
+
+
+     /*=========================================================
+                      PG10 -> L_LB1_R
+      =======================================================*/
+     /*fill the structure before the pin configuration, then pass
+       both the pointers #define GPIOG ((GPIO_TypeDef *) GPIOG_BASE)
+       and &GPIO_InitStruct
+      */
+     GPIO_InitStruct.Pin = GPIO_PIN_10;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOG, GPIO_PIN_10, GPIO_PIN_RESET);
+
+
+
+     /*=========================================================
+                PD4 -> L_LA1_G
+      =========================================================*/
+     /*fill the structure before the pin configuration, then pass
+        both the pointers #define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)
+        and &GPIO_InitStruct
+       */
+     GPIO_InitStruct.Pin = GPIO_PIN_4;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_RESET);
+
+     /*=========================================================
+                     PH2 -> L_LB1_G
+      =========================================================*/
+     /*fill the structure before the pin configuration, then pass
+        both the pointers #define GPIOH ((GPIO_TypeDef *) GPIOH_BASE)
+        and &GPIO_InitStruct
+       */
+     GPIO_InitStruct.Pin = GPIO_PIN_2;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOH, GPIO_PIN_2, GPIO_PIN_RESET);
+
+
+      /*=========================================================
+                      PD5 -> nFLT
+      =======================================================*/
+      /*fill the structure before the pin configuration, then pass
+       both the pointers #define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)
+       and &GPIO_InitStruct
+      */
+     GPIO_InitStruct.Pin = GPIO_PIN_5;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_5, GPIO_PIN_SET);
+
+
+
+     /*=========================================================
+                PE3 -> PGOOD
+      =========================================================*/
+     /*fill the structure before the pin configuration, then pass
+        both the pointers #define GPIOE ((GPIO_TypeDef *) GPIOE_BASE)
+        and &GPIO_InitStruct
+       */
+     GPIO_InitStruct.Pin = GPIO_PIN_3;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);
+
+     RelayInitConfig();
+     LedInitConfig();
+
+
+}
+
+
+void RelayInitConfig(void)
+{
+
+    /* Current configuration: ERR:A1 ok A2 SHORT*/
+
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);           /*K_A_E */
+	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);         /*KA_NC */
+	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);           /*KA_NO */
+
+
+	 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, GPIO_PIN_RESET);        /*K_B_E */
+	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_2, GPIO_PIN_RESET);         /*KB_NC */
+	 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_5, GPIO_PIN_SET);        /*KB_NO */
+
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15,GPIO_PIN_RESET);    /*nSHTDN*/
+	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_5, GPIO_PIN_SET);      /*nFLT  */
+	 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);     /*PGOOD */
+
+}
+void LedInitConfig(void)
+{
+
+
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_RESET);         /*L_LA1_G*/
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, GPIO_PIN_RESET);        /*L_LA1_R*/
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);       /*L_LA2_R*/
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);      /*L_LA2_G*/
+	HAL_GPIO_WritePin(GPIOH, GPIO_PIN_2, GPIO_PIN_RESET);     /*L_LB1_G*/
+	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_10,GPIO_PIN_RESET);    /*L_LB1_R*/
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_6, GPIO_PIN_RESET);   /*L_LB2_R*/
+	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_15, GPIO_PIN_RESET); /*L_LB2_G*/
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 #ifdef  USE_FULL_ASSERT
