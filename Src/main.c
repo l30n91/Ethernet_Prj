@@ -298,7 +298,6 @@ static void GPIO_Config(void)
 
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
 
 
 
@@ -316,8 +315,6 @@ static void GPIO_Config(void)
 
      HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-     HAL_GPIO_WritePin(GPIOG, GPIO_PIN_15, GPIO_PIN_RESET);
-
 
 
    /*=========================================================
@@ -334,7 +331,7 @@ static void GPIO_Config(void)
 
      HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
+
 
 
      /*=========================================================
@@ -351,7 +348,7 @@ static void GPIO_Config(void)
 
       HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-      HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, GPIO_PIN_RESET);
+
 
 
 
@@ -373,7 +370,7 @@ static void GPIO_Config(void)
 
      HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
+
 
 
 
@@ -391,7 +388,7 @@ static void GPIO_Config(void)
 
      HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+
 
 
      /*=========================================================
@@ -408,7 +405,7 @@ static void GPIO_Config(void)
 
      HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_5, GPIO_PIN_SET);
+
 
 
 
@@ -427,7 +424,7 @@ static void GPIO_Config(void)
 
       HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-      HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);
+
 
 
 
@@ -445,7 +442,7 @@ static void GPIO_Config(void)
 
      HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_6, GPIO_PIN_RESET);
+
 
 
 
@@ -463,7 +460,7 @@ static void GPIO_Config(void)
 
      HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
+
 
      /*=========================================================
                          PF2 -> K_B_NC
@@ -479,7 +476,7 @@ static void GPIO_Config(void)
 
      HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-     HAL_GPIO_WritePin(GPIOF, GPIO_PIN_2, GPIO_PIN_SET);
+
 
 
 
@@ -497,7 +494,7 @@ static void GPIO_Config(void)
 
      HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, GPIO_PIN_RESET);
+
 
 
 
@@ -515,7 +512,6 @@ static void GPIO_Config(void)
 
      HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-     HAL_GPIO_WritePin(GPIOG, GPIO_PIN_10, GPIO_PIN_RESET);
 
 
 
@@ -533,7 +529,7 @@ static void GPIO_Config(void)
 
      HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_RESET);
+
 
      /*=========================================================
                      PH2 -> L_LB1_G
@@ -549,7 +545,6 @@ static void GPIO_Config(void)
 
      HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
 
-     HAL_GPIO_WritePin(GPIOH, GPIO_PIN_2, GPIO_PIN_RESET);
 
 
       /*=========================================================
@@ -566,7 +561,7 @@ static void GPIO_Config(void)
 
      HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_5, GPIO_PIN_SET);
+
 
 
 
@@ -584,7 +579,99 @@ static void GPIO_Config(void)
 
      HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-     HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);
+
+     /*=========================================================
+                         PC8 -> K_SA_E2
+     =========================================================*/
+     GPIO_InitStruct.Pin = GPIO_PIN_8;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+
+
+     /*=========================================================
+                         PB11 -> K_SA_E3
+     =========================================================*/
+     GPIO_InitStruct.Pin = GPIO_PIN_11;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
+
+
+     /*=========================================================
+                         PA8 -> K_HA_E
+     =========================================================*/
+     GPIO_InitStruct.Pin = GPIO_PIN_9;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_RESET);
+
+
+     /*=========================================================
+                         PF8 -> K_HB_E
+     =========================================================*/
+     GPIO_InitStruct.Pin = GPIO_PIN_8;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOF, GPIO_PIN_8, GPIO_PIN_RESET);
+
+
+     /*=========================================================
+                         PD14 -> K_SB_E1
+     =========================================================*/
+     GPIO_InitStruct.Pin = GPIO_PIN_14;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
+
+
+     /*=========================================================
+                         PB15 -> K_SB_E2
+     =========================================================*/
+     GPIO_InitStruct.Pin = GPIO_PIN_15;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
+
+
+     /*=========================================================
+                         PF14 -> K_SB_E3
+     =========================================================*/
+     GPIO_InitStruct.Pin = GPIO_PIN_14;
+     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+     GPIO_InitStruct.Pull = GPIO_NOPULL;
+     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+     HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+     HAL_GPIO_WritePin(GPIOF, GPIO_PIN_14, GPIO_PIN_RESET);
+
+
+
 
      RelayInitConfig();
      LedInitConfig();
