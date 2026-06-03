@@ -62,6 +62,7 @@ ErrorStatus_t* CheckRelayStatusA2(ErrorStatus_t*);
 ErrorStatus_t* CheckRelayStatusB1(ErrorStatus_t*);
 ErrorStatus_t* CheckRelayStatusB2(ErrorStatus_t*);
 static void CheckPathVal(SetPathValue_t,SetPathValue_t,ErrorStatus_t*, ErrorStatus_t*);
+static void ErrorManager(ErrorStatus_t,ErrorStatus_t, char *, size_t);
 
 
 
@@ -238,37 +239,11 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
         //g_get_value = hw_read_get();
 
         //if (g_get_value == g_set_value)
-        if(!RelayErrorPath1 && !RelayErrorPath2)
-        {
-            snprintf(reply, reply_size, "ok:set\r\n");
-        }
-        else if ((RelayErrorPath1 == Err_KA_Disconnected) && !RelayErrorPath2)
-        {
-            snprintf(reply, reply_size, "err:KA disconnected\r\n");
 
-        }
-        else if (!RelayErrorPath1 && (RelayErrorPath2 == Err_KB_Disconnected))
-        {
-            snprintf(reply, reply_size, "err:KB disconnected\r\n");
-        }
-        else if ((RelayErrorPath1 == Err_KA_Disconnected) && (RelayErrorPath2 == Err_KB_Disconnected))
-        {
-            snprintf(reply, reply_size, "err:KA and KB disconnected\r\n");
-        }
-        else if ((RelayErrorPath1 == Err_KA_Short) && (RelayErrorPath2 == Err_KB_Disconnected))
-        {
-            snprintf(reply, reply_size, "err:KA Short, KB disconnected\r\n");
-        }
-        else if ((RelayErrorPath1 == Err_KA_Disconnected) && (RelayErrorPath2 == Err_KB_Short))
-        {
-             snprintf(reply, reply_size, "err:KB Short, KB disconnected\r\n");
-        }
-        else if (RelayErrorPath1 == Err_InvalidConfig || RelayErrorPath2 == Err_InvalidConfig )
-        {
+        ErrorManager(RelayErrorPath1,RelayErrorPath2, reply, reply_size);
+       //ErrorManager();
 
-        	snprintf(reply, reply_size, "err:Invalid Feedback\r\n");
-        }
-        /*to be completed... */
+
 
         return;
     }
@@ -371,7 +346,7 @@ static int parse_path_value2(const char *s, SetPathValue_t *value)
 
     if (strncmp(s, "B2", 2) == 0)
     {
-          *value = SET_PATH_B1;
+          *value = SET_PATH_B2;
            return 1;
     }
 
@@ -932,6 +907,88 @@ static void CheckPathVal(SetPathValue_t PathVal,SetPathValue_t PathVal2, ErrorSt
 
 
 }
+
+
+
+static void ErrorManager(ErrorStatus_t RelayErrorPath1,ErrorStatus_t RelayErrorPath2, char *reply, size_t reply_size)
+{
+
+	if ((RelayErrorPath1 == Err_ok) && (RelayErrorPath2 == Err_ok))
+	{
+	    snprintf(reply, reply_size, "ok:set\r\n");
+	}
+	else if ((RelayErrorPath1 == Err_InvalidConfig) &&
+	         (RelayErrorPath2 == Err_InvalidConfig))
+	{
+	    snprintf(reply, reply_size, "err:Both Relay Not Switched \r\n");
+	}
+
+	else if ((RelayErrorPath1 == Err_InvalidConfig) ||
+		         (RelayErrorPath2 == Err_ok))
+    {
+		    snprintf(reply, reply_size, "err:Relay A not switched \r\n");
+	}
+
+	else if ((RelayErrorPath1 == Err_PWR) ||
+	         (RelayErrorPath2 == Err_PWR))
+	{
+	    snprintf(reply, reply_size, "err:PWR error\r\n");
+	}
+	else if ((RelayErrorPath1 == Err_KA_Disconnected) &&
+	         (RelayErrorPath2 == Err_ok))
+	{
+	    snprintf(reply, reply_size, "err:KA disconnected\r\n");
+	}
+	else if ((RelayErrorPath1 == Err_KA_Short) &&
+	         (RelayErrorPath2 == Err_ok))
+	{
+	    snprintf(reply, reply_size, "err:KA short\r\n");
+	}
+	else if ((RelayErrorPath1 == Err_ok) &&
+	         (RelayErrorPath2 == Err_KB_Disconnected))
+	{
+	    snprintf(reply, reply_size, "err:KB disconnected\r\n");
+	}
+	else if ((RelayErrorPath1 == Err_ok) &&
+	         (RelayErrorPath2 == Err_KB_Short))
+	{
+	    snprintf(reply, reply_size, "err:KB short\r\n");
+	}
+	else if ((RelayErrorPath1 == Err_KA_Disconnected) &&
+	         (RelayErrorPath2 == Err_KB_Disconnected))
+	{
+	    snprintf(reply, reply_size, "err:KA disconnected, KB disconnected\r\n");
+	}
+	else if ((RelayErrorPath1 == Err_KA_Disconnected) &&
+	         (RelayErrorPath2 == Err_KB_Short))
+	{
+	    snprintf(reply, reply_size, "err:KA disconnected, KB short\r\n");
+	}
+	else if ((RelayErrorPath1 == Err_KA_Short) &&
+	         (RelayErrorPath2 == Err_KB_Disconnected))
+	{
+	    snprintf(reply, reply_size, "err:KA short, KB disconnected\r\n");
+	}
+	else if ((RelayErrorPath1 == Err_KA_Short) &&
+	         (RelayErrorPath2 == Err_KB_Short))
+	{
+	    snprintf(reply, reply_size, "err:KA short, KB short\r\n");
+	}
+	else
+	{
+	    snprintf(reply, reply_size, "err:Unknown relay error\r\n");
+	}
+
+	return;
+
+}
+
+
+
+
+
+
+
 
 
 static SetValue_t hw_read_get(void)
