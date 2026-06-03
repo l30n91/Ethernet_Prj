@@ -37,8 +37,9 @@ typedef enum
 	Err_KB_Disconnected,
     Err_KB_Short,
     Err_PWR,
-	Err_InvalidConfig
-
+	Err_InvalidConfig,
+	Se_ok,
+	Se_ERR
 }ErrorStatus_t;
 
 
@@ -61,13 +62,30 @@ typedef struct
 
 	GPIO_PinState K_SB_E1;
 	GPIO_PinState K_SB_E2;
-	GPIO_PinState K_SB_E;
+	GPIO_PinState K_SB_E3;
 
 	GPIO_PinState K_HA_E;
 	GPIO_PinState K_HB_E;
 
+	GPIO_PinState K_HA_NC;
+	GPIO_PinState K_HA_NO;
 
-}RelayThreeStatesPin_t;
+	GPIO_PinState K_HB_NC;
+    GPIO_PinState K_HB_NO;
+
+	GPIO_PinState K_SA_S1;
+    GPIO_PinState K_SA_S2;
+    GPIO_PinState K_SA_S3;
+
+	GPIO_PinState K_SB_S1;
+	GPIO_PinState K_SB_S2;
+	GPIO_PinState K_SB_S3;
+
+	GPIO_PinState nFLT;
+	GPIO_PinState PGOOD;
+
+
+}AttenuationPathStatusPin_t;
 
 
 static SetPathValue_t g_set_value = SET_VAL_0;
@@ -447,7 +465,7 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_
     {
 
 		case SET_VAL_0:
-			SetAttenuationRelayPath(GPIO_PIN_SET,  /* K_SA_E1 */
+		SetAttenuationRelayPath(GPIO_PIN_SET,  /* K_SA_E1 */
 					            GPIO_PIN_RESET,  /* K_SA_E2 */
 								GPIO_PIN_RESET,  /* K_SA_E3 */
 								GPIO_PIN_SET,  /* K_SB_E1 */
@@ -456,7 +474,9 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_
 								GPIO_PIN_SET,   /* K_HA_E */
 								GPIO_PIN_SET); /* K_HB_E */
 
-		   CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+
+		 CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+
 		break;
 
 		case SET_VAL_30:
@@ -904,6 +924,59 @@ ErrorStatus_t* CheckRelayStatusB2(ErrorStatus_t* ErrorStatus )
 
 }
 
+ErrorStatus_t* CheckRelayStatusAttSRT(ErrorStatus_t* ErrorStatus)
+{
+
+	AttenuationPathStatusPin_t PinStatus;
+	PinStatus.K_SA_S1 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12);
+	PinStatus.K_SA_S2 = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6);
+	PinStatus.K_SA_S3 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2);
+	PinStatus.K_SB_S1 = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_15);
+	PinStatus.K_SB_S2 = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_7);
+	PinStatus.K_SB_S3 = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_9);
+	PinStatus.nFLT    = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_5);
+	PinStatus.PGOOD   = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3);
+
+
+
+
+	if (!((PinStatus.nFLT & 0x01)  &  (PinStatus.PGOOD & 0x01)))
+	   {
+		   *ErrorStatus= Se_ERR;
+	        return ErrorStatus;
+	   }
+
+	     if ((PinStatus.K_SA_S1 == GPIO_PIN_RESET)&&
+			 (PinStatus.K_SA_S2 == GPIO_PIN_SET)&&
+			 (PinStatus.K_SA_S3 == GPIO_PIN_SET)&&
+			 (PinStatus.K_SB_S1 == GPIO_PIN_RESET)&&
+			 (PinStatus.K_SB_S2 == GPIO_PIN_SET)&&
+			 (PinStatus.K_SB_S3 == GPIO_PIN_SET))
+
+	     {
+	    	 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2,  GPIO_PIN_SET); /* L_SRT_G =1 */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_SRT_R =0 */
+	    	 *ErrorStatus= Se_ok;
+	     }
+	     else
+	     {
+	    	 *ErrorStatus= Se_ERR;
+	     }
+
+
+      return ErrorStatus;
+
+}
+
+
+
+
+
+
+
+
+
+
 static void CheckPathVal(SetPathValue_t PathVal,SetPathValue_t PathVal2, ErrorStatus_t* ErrorStatusPath1, ErrorStatus_t* ErrorStatusPath2)
 {
 
@@ -1060,12 +1133,6 @@ static void ErrorManager(ErrorStatus_t RelayErrorPath1,ErrorStatus_t RelayErrorP
 	return;
 
 }
-
-
-
-
-
-
 void SetAttenuationRelayPath(GPIO_PinState K_SA_E1,
 						 GPIO_PinState K_SA_E2,
 						 GPIO_PinState K_SA_E3,
@@ -1089,6 +1156,15 @@ void SetAttenuationRelayPath(GPIO_PinState K_SA_E1,
 	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_8,  K_HB_E); /* K_HB_E */
 
 }
+
+
+
+
+
+
+
+
+
 
 
 
