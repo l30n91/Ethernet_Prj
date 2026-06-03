@@ -95,8 +95,9 @@ ErrorStatus_t* CheckRelayStatusA1(ErrorStatus_t*);
 ErrorStatus_t* CheckRelayStatusA2(ErrorStatus_t*);
 ErrorStatus_t* CheckRelayStatusB1(ErrorStatus_t*);
 ErrorStatus_t* CheckRelayStatusB2(ErrorStatus_t*);
+ErrorStatus_t* CheckRelayStatusAttSRT(ErrorStatus_t*);
 static void CheckPathVal(SetPathValue_t,SetPathValue_t,ErrorStatus_t*, ErrorStatus_t*);
-static void ErrorManager(ErrorStatus_t,ErrorStatus_t, char *, size_t);
+static void ErrorManager(ErrorStatus_t,ErrorStatus_t,ErrorStatus_t, char *, size_t);
 void SetAttenuationRelayPath(GPIO_PinState,
 		                 GPIO_PinState,
 						 GPIO_PinState,
@@ -116,7 +117,7 @@ static int parse_path_value2(const char *s, SetPathValue_t *value);
 static int parse_att_value(const char *s, SetValue_t *value);
 static const char *set_value_to_string(SetValue_t value);
 
-static void hw_apply_set(SetValue_t, SetPathValue_t,SetPathValue_t, ErrorStatus_t*,ErrorStatus_t* );
+static void hw_apply_set(SetValue_t, SetPathValue_t,SetPathValue_t, ErrorStatus_t*,ErrorStatus_t*, ErrorStatus_t* );
 static SetValue_t hw_read_get(void);
 
 static float read_3v3_voltage(void);
@@ -217,6 +218,8 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
         SetPathValue_t requestedPath_value2; //B1 o B2
         ErrorStatus_t RelayErrorPath1;
         ErrorStatus_t RelayErrorPath2;
+        ErrorStatus_t AttenuationErrorPath;
+
 
         /* set_a1_30, set_a1_z*/
         //check_path -> A1/A2
@@ -274,7 +277,7 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
         /* applicazione hardware del comando ricevuto Relay managment*/
         //g_set_value = requestedPath_value;
-        hw_apply_set(requestedAtt_value, requestedPath_value,requestedPath_value2, &RelayErrorPath1, &RelayErrorPath2);
+        hw_apply_set(requestedAtt_value, requestedPath_value,requestedPath_value2, &RelayErrorPath1, &RelayErrorPath2, &AttenuationErrorPath);
 
         osDelay(10);
 
@@ -282,7 +285,7 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
         //if (g_get_value == g_set_value)
 
-        ErrorManager(RelayErrorPath1,RelayErrorPath2, reply, reply_size);
+        ErrorManager(RelayErrorPath1,RelayErrorPath2,AttenuationErrorPath, reply, reply_size);
        //ErrorManager();
 
 
@@ -455,7 +458,7 @@ static const char *set_value_to_string(SetValue_t value)
 }
 
 
-static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_t PathVal2, ErrorStatus_t* ErrorStatusPath1, ErrorStatus_t* ErrorStatusPath2)
+static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_t PathVal2, ErrorStatus_t* ErrorStatusPath1, ErrorStatus_t* ErrorStatusPath2,ErrorStatus_t* ErrorStatusAtt )
 {
 
 
@@ -476,6 +479,8 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_
 
 
 		 CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+
+		 CheckRelayStatusAttSRT(ErrorStatusAtt);
 
 		break;
 
@@ -513,6 +518,7 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_
 								GPIO_PIN_SET,   /* K_HA_E */
 								GPIO_PIN_SET); /* K_HB_E */
 			CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+
 		break;
 
 		case SET_VAL_H:
@@ -1056,14 +1062,20 @@ static void CheckPathVal(SetPathValue_t PathVal,SetPathValue_t PathVal2, ErrorSt
 
 
 
-static void ErrorManager(ErrorStatus_t RelayErrorPath1,ErrorStatus_t RelayErrorPath2, char *reply, size_t reply_size)
+static void ErrorManager(ErrorStatus_t RelayErrorPath1,ErrorStatus_t RelayErrorPath2,ErrorStatus_t AttenuationErrorPath, char *reply, size_t reply_size)
 {
 
-	if ((RelayErrorPath1 == Err_ok) && (RelayErrorPath2 == Err_ok))
+	if (  (RelayErrorPath1 == Err_ok) && (RelayErrorPath2 == Err_ok) && (AttenuationErrorPath == Se_ok))
 	{
 	    snprintf(reply, reply_size, "ok:set\r\n");
 	}
-	else if ((RelayErrorPath1 == Err_InvalidConfig) &&
+
+	else if (AttenuationErrorPath == Se_ERR)
+    {
+		snprintf(reply, reply_size, "err: Se_ERR \r\n");
+	}
+
+    else if ((RelayErrorPath1 == Err_InvalidConfig) &&
 	         (RelayErrorPath2 == Err_InvalidConfig))
 	{
 	    snprintf(reply, reply_size, "err:Both Relay Not Switched \r\n");
