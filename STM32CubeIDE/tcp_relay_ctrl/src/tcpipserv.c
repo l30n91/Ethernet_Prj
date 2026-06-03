@@ -923,11 +923,16 @@ static void ErrorManager(ErrorStatus_t RelayErrorPath1,ErrorStatus_t RelayErrorP
 	    snprintf(reply, reply_size, "err:Both Relay Not Switched \r\n");
 	}
 
-	else if ((RelayErrorPath1 == Err_InvalidConfig) ||
+	else if ((RelayErrorPath1 == Err_InvalidConfig) &&
 		         (RelayErrorPath2 == Err_ok))
     {
-		    snprintf(reply, reply_size, "err:Relay A not switched \r\n");
-	}
+	    snprintf(reply, reply_size, "err:Relay A not switched \r\n");
+    }
+	else if ((RelayErrorPath1 == Err_ok) &&
+			         (RelayErrorPath2 == Err_InvalidConfig))
+	{
+	    snprintf(reply, reply_size, "err:Relay B not switched \r\n");
+    }
 
 	else if ((RelayErrorPath1 == Err_PWR) ||
 	         (RelayErrorPath2 == Err_PWR))
