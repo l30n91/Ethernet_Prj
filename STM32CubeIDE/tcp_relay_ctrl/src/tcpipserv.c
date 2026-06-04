@@ -14,7 +14,7 @@
 
 typedef enum
 {
-    SET_VAL_0 = 0,
+    SET_VAL_SRT = 0,
     SET_VAL_30 = 30,
     SET_VAL_130 = 130,
     SET_VAL_155 = 155,
@@ -37,8 +37,9 @@ typedef enum
 	Err_KB_Disconnected,
     Err_KB_Short,
     Err_PWR,
-	Err_InvalidConfig
-
+	Err_InvalidConfig,
+	Se_ok,
+	Se_ERR
 }ErrorStatus_t;
 
 
@@ -53,16 +54,75 @@ typedef struct {
 }PathStatus_t;
 
 
+typedef struct
+{
+	GPIO_PinState K_SA_E1;
+	GPIO_PinState K_SA_E2;
+	GPIO_PinState K_SA_E3;
 
-static SetPathValue_t g_set_value = SET_VAL_0;
-static SetPathValue_t g_get_value = SET_VAL_0;
+	GPIO_PinState K_SB_E1;
+	GPIO_PinState K_SB_E2;
+	GPIO_PinState K_SB_E3;
+
+	GPIO_PinState K_HA_E;
+	GPIO_PinState K_HB_E;
+
+	GPIO_PinState K_HA_NC;
+	GPIO_PinState K_HA_NO;
+
+	GPIO_PinState K_HB_NC;
+    GPIO_PinState K_HB_NO;
+
+	GPIO_PinState K_SA_S1;
+    GPIO_PinState K_SA_S2;
+    GPIO_PinState K_SA_S3;
+
+	GPIO_PinState K_SB_S1;
+	GPIO_PinState K_SB_S2;
+	GPIO_PinState K_SB_S3;
+
+	GPIO_PinState nFLT;
+	GPIO_PinState PGOOD;
+
+
+}AttenuationPathStatusPin_t;
+
+
+typedef struct
+{
+    SetPathValue_t pathA;
+    SetPathValue_t pathB;
+    SetValue_t attenuation;
+} HwGetStatus_t;
+
+
+
+
+
+static SetPathValue_t g_set_value = SET_VAL_SRT;
+static SetPathValue_t g_get_value = SET_VAL_SRT;
 
 ErrorStatus_t* CheckRelayStatusA1(ErrorStatus_t*);
 ErrorStatus_t* CheckRelayStatusA2(ErrorStatus_t*);
 ErrorStatus_t* CheckRelayStatusB1(ErrorStatus_t*);
 ErrorStatus_t* CheckRelayStatusB2(ErrorStatus_t*);
+
+ErrorStatus_t* CheckRelayStatusAttSRT(ErrorStatus_t*);
+ErrorStatus_t* CheckRelayStatusAtt30(ErrorStatus_t*);
+ErrorStatus_t* CheckRelayStatusAtt130(ErrorStatus_t*);
+ErrorStatus_t* CheckRelayStatusAtt155(ErrorStatus_t*);
+ErrorStatus_t* CheckRelayStatusAttOPN(ErrorStatus_t*);
+
 static void CheckPathVal(SetPathValue_t,SetPathValue_t,ErrorStatus_t*, ErrorStatus_t*);
-static void ErrorManager(ErrorStatus_t,ErrorStatus_t, char *, size_t);
+static void ErrorManager(ErrorStatus_t,ErrorStatus_t,ErrorStatus_t, char *, size_t);
+void SetAttenuationRelayPath(GPIO_PinState,
+		                 GPIO_PinState,
+						 GPIO_PinState,
+						 GPIO_PinState,
+						 GPIO_PinState,
+						 GPIO_PinState,
+						 GPIO_PinState,
+						 GPIO_PinState);
 
 
 
@@ -74,7 +134,26 @@ static int parse_path_value2(const char *s, SetPathValue_t *value);
 static int parse_att_value(const char *s, SetValue_t *value);
 static const char *set_value_to_string(SetValue_t value);
 
-static void hw_apply_set(SetValue_t, SetPathValue_t,SetPathValue_t, ErrorStatus_t*,ErrorStatus_t* );
+
+static int read_path_A(SetPathValue_t *path);
+static int read_path_B(SetPathValue_t *path);
+static int read_attenuation(SetValue_t *att);
+
+static int hw_read_get_status(HwGetStatus_t *status);
+
+static const char *pathA_to_string(SetPathValue_t path);
+static const char *pathB_to_string(SetPathValue_t path);
+static const char *set_value_to_string(SetValue_t value);
+
+
+
+
+
+
+
+
+
+static void hw_apply_set(SetValue_t, SetPathValue_t,SetPathValue_t, ErrorStatus_t*,ErrorStatus_t*, ErrorStatus_t* );
 static SetValue_t hw_read_get(void);
 
 static float read_3v3_voltage(void);
@@ -175,6 +254,8 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
         SetPathValue_t requestedPath_value2; //B1 o B2
         ErrorStatus_t RelayErrorPath1;
         ErrorStatus_t RelayErrorPath2;
+        ErrorStatus_t AttenuationErrorPath;
+
 
         /* set_a1_30, set_a1_z*/
         //check_path -> A1/A2
@@ -232,7 +313,7 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
         /* applicazione hardware del comando ricevuto Relay managment*/
         //g_set_value = requestedPath_value;
-        hw_apply_set(requestedAtt_value, requestedPath_value,requestedPath_value2, &RelayErrorPath1, &RelayErrorPath2);
+        hw_apply_set(requestedAtt_value, requestedPath_value,requestedPath_value2, &RelayErrorPath1, &RelayErrorPath2, &AttenuationErrorPath);
 
         osDelay(10);
 
@@ -240,7 +321,7 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
         //if (g_get_value == g_set_value)
 
-        ErrorManager(RelayErrorPath1,RelayErrorPath2, reply, reply_size);
+        ErrorManager(RelayErrorPath1,RelayErrorPath2,AttenuationErrorPath, reply, reply_size);
        //ErrorManager();
 
 
@@ -250,14 +331,16 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
     if (strncmp(cmd, "get", 3) == 0)
     {
-        g_get_value = hw_read_get();
+        HwGetStatus_t status;
 
-        if (g_get_value == g_set_value)
+        if (hw_read_get_status(&status))
         {
             snprintf(reply,
                      reply_size,
-                     "ok:get %s\r\n",
-                     set_value_to_string(g_get_value));
+                     "ok:get %s %s %s\r\n",
+                     pathA_to_string(status.pathA),
+                     set_value_to_string(status.attenuation),
+                     pathB_to_string(status.pathB));
         }
         else
         {
@@ -266,7 +349,6 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
         return;
     }
-
     if (strncmp(cmd, "info", 4) == 0)
     {
         uint32_t uid0 = HAL_GetUIDw0();
@@ -355,9 +437,9 @@ static int parse_path_value2(const char *s, SetPathValue_t *value)
 
 static int parse_att_value(const char *s, SetValue_t *value)
 {
-    if (strncmp(s, "0", 1) == 0)
+    if (strncmp(s, "SRT", 3) == 0)
     {
-        *value = SET_VAL_0;
+        *value = SET_VAL_SRT;
         return 1;
     }
 
@@ -392,8 +474,8 @@ static const char *set_value_to_string(SetValue_t value)
 {
     switch (value)
     {
-    case SET_VAL_0:
-        return "0";
+    case SET_VAL_SRT:
+        return "SRT";
 
     case SET_VAL_30:
         return "30";
@@ -413,32 +495,83 @@ static const char *set_value_to_string(SetValue_t value)
 }
 
 
-static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_t PathVal2, ErrorStatus_t* ErrorStatusPath1, ErrorStatus_t* ErrorStatusPath2)
+static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_t PathVal2, ErrorStatus_t* ErrorStatusPath1, ErrorStatus_t* ErrorStatusPath2,ErrorStatus_t* ErrorStatusAtt )
 {
 
 
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET); //nSHDN=1
+
 	switch (AttVal)
     {
 
-		case SET_VAL_0:
-			 CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+		case SET_VAL_SRT:
+		SetAttenuationRelayPath(GPIO_PIN_SET,  /* K_SA_E1 */
+					            GPIO_PIN_RESET,  /* K_SA_E2 */
+								GPIO_PIN_RESET,  /* K_SA_E3 */
+								GPIO_PIN_SET,  /* K_SB_E1 */
+								GPIO_PIN_RESET,  /* K_SB_E2 */
+								GPIO_PIN_RESET,   /* K_SB_E3 */
+								GPIO_PIN_SET,   /* K_HA_E */
+								GPIO_PIN_SET); /* K_HB_E */
+
+
+		 CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+
+		 CheckRelayStatusAttSRT(ErrorStatusAtt);
+
 		break;
 
 		case SET_VAL_30:
-			 CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+			SetAttenuationRelayPath(GPIO_PIN_RESET,  /* K_SA_E1 */
+					            GPIO_PIN_SET,  /* K_SA_E2 */
+								GPIO_PIN_RESET,  /* K_SA_E3 */
+								GPIO_PIN_RESET,  /* K_SB_E1 */
+								GPIO_PIN_SET,  /* K_SB_E2 */
+								GPIO_PIN_RESET,   /* K_SB_E3 */
+								GPIO_PIN_RESET,   /* K_HA_E */
+								GPIO_PIN_RESET); /* K_HB_E */
+			CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+			CheckRelayStatusAtt30(ErrorStatusAtt);
 		break;
 
 		case SET_VAL_130:
+			SetAttenuationRelayPath(GPIO_PIN_RESET,  /* K_SA_E1 */
+					            GPIO_PIN_RESET,  /* K_SA_E2 */
+								GPIO_PIN_SET,  /* K_SA_E3 */
+								GPIO_PIN_RESET,  /* K_SB_E1 */
+								GPIO_PIN_RESET,  /* K_SB_E2 */
+								GPIO_PIN_SET,   /* K_SB_E3 */
+								GPIO_PIN_RESET,   /* K_HA_E */
+								GPIO_PIN_RESET); /* K_HB_E */
 			CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+			CheckRelayStatusAtt130(ErrorStatusAtt);
 		break;
 
 		case SET_VAL_155:
+			SetAttenuationRelayPath(GPIO_PIN_RESET,  /* K_SA_E1 */
+					            GPIO_PIN_RESET,  /* K_SA_E2 */
+								GPIO_PIN_SET,  /* K_SA_E3 */
+								GPIO_PIN_RESET,  /* K_SB_E1 */
+								GPIO_PIN_RESET,  /* K_SB_E2 */
+								GPIO_PIN_SET,   /* K_SB_E3 */
+								GPIO_PIN_SET,   /* K_HA_E */
+								GPIO_PIN_SET); /* K_HB_E */
 			CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+			CheckRelayStatusAtt155(ErrorStatusAtt);
+
 		break;
 
 		case SET_VAL_H:
+			SetAttenuationRelayPath(GPIO_PIN_RESET,  /* K_SA_E1 */
+					            GPIO_PIN_RESET,  /* K_SA_E2 */
+								GPIO_PIN_RESET,  /* K_SA_E3 */
+								GPIO_PIN_RESET,  /* K_SB_E1 */
+								GPIO_PIN_RESET,  /* K_SB_E2 */
+								GPIO_PIN_RESET,   /* K_SB_E3 */
+								GPIO_PIN_SET,   /* K_HA_E */
+								GPIO_PIN_SET); /* K_HB_E */
 			CheckPathVal(PathVal,PathVal2,ErrorStatusPath1,ErrorStatusPath2);
+			CheckRelayStatusAttOPN(ErrorStatusAtt);
 		break;
 
 		default:
@@ -838,17 +971,383 @@ ErrorStatus_t* CheckRelayStatusB2(ErrorStatus_t* ErrorStatus )
 
 }
 
+ErrorStatus_t* CheckRelayStatusAttSRT(ErrorStatus_t* ErrorStatus)
+{
+
+	AttenuationPathStatusPin_t PinStatus;
+	PinStatus.K_SA_S1 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12);
+	PinStatus.K_SA_S2 = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6);
+	PinStatus.K_SA_S3 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2);
+	PinStatus.K_SB_S1 = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_15);
+	PinStatus.K_SB_S2 = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_7);
+	PinStatus.K_SB_S3 = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_9);
+	PinStatus.nFLT    = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_5);
+	PinStatus.PGOOD   = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3);
+
+
+
+
+     	 if ( (PinStatus.nFLT != GPIO_PIN_SET) ||
+	         (PinStatus.PGOOD != GPIO_PIN_SET))
+	     {
+	       *ErrorStatus = Se_ERR;
+	        return ErrorStatus;
+	     }
+
+	     if ((PinStatus.K_SA_S1 == GPIO_PIN_RESET) &&
+			 (PinStatus.K_SA_S2 == GPIO_PIN_SET)   &&
+			 (PinStatus.K_SA_S3 == GPIO_PIN_SET)   &&
+			 (PinStatus.K_SB_S1 == GPIO_PIN_RESET) &&
+			 (PinStatus.K_SB_S2 == GPIO_PIN_SET)   &&
+			 (PinStatus.K_SB_S3 == GPIO_PIN_SET))
+
+	     {
+	    	 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2,  GPIO_PIN_SET); /* L_SRT_G =1 */
+
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_SRT_R  */
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_LX1_G */
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_LX1_R */
+             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET); /* L_LX2_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_LX2_R */
+             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_RESET); /* L_LX3_G */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_RESET); /* L_LX3_R */
+             HAL_GPIO_WritePin(GPIOG, GPIO_PIN_3,  GPIO_PIN_RESET); /* L_OPN_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_OPN_R */
+
+
+	    	  *ErrorStatus= Se_ok;
+	     }
+	     else
+	     {
+
+
+	    	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //nSHTDN=0
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,  GPIO_PIN_SET); /* L_SRT_R = 1 */
+
+	    	 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_SRT_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_SRT_R */
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_LX1_G */
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_LX1_R */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET); /* L_LX2_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_LX2_R */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_RESET); /* L_LX3_G */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_RESET); /* L_LX3_R */
+	    	 HAL_GPIO_WritePin(GPIOG, GPIO_PIN_3,  GPIO_PIN_RESET); /* L_OPN_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_OPN_R */
+
+	    	 *ErrorStatus= Se_ERR;
+	     }
+
+
+      return ErrorStatus;
+
+}
+ErrorStatus_t* CheckRelayStatusAtt30(ErrorStatus_t* ErrorStatus)
+{
+
+	AttenuationPathStatusPin_t PinStatus;
+	PinStatus.K_SA_S1 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12);
+	PinStatus.K_SA_S2 = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6);
+	PinStatus.K_SA_S3 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2);
+	PinStatus.K_SB_S1 = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_15);
+	PinStatus.K_SB_S2 = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_7);
+	PinStatus.K_SB_S3 = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_9);
+	PinStatus.nFLT    = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_5);
+	PinStatus.PGOOD   = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3);
+
+
+
+
+     	 if ( (PinStatus.nFLT != GPIO_PIN_SET) ||
+	         (PinStatus.PGOOD != GPIO_PIN_SET))
+	     {
+	       *ErrorStatus = Se_ERR;
+	        return ErrorStatus;
+	     }
+
+	     if ((PinStatus.K_SA_S1 == GPIO_PIN_SET) &&
+			 (PinStatus.K_SA_S2 == GPIO_PIN_RESET)   &&
+			 (PinStatus.K_SA_S3 == GPIO_PIN_SET)   &&
+			 (PinStatus.K_SB_S1 == GPIO_PIN_SET) &&
+			 (PinStatus.K_SB_S2 == GPIO_PIN_RESET)   &&
+			 (PinStatus.K_SB_S3 == GPIO_PIN_SET))
+
+	     {
+
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6,  GPIO_PIN_SET); /* L_LX1_G */
+	    	 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_SRT_G =1 */
+             HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_SRT_R  */
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_LX1_R */
+             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET); /* L_LX2_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_LX2_R */
+             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_RESET); /* L_LX3_G */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_RESET); /* L_LX3_R */
+             HAL_GPIO_WritePin(GPIOG, GPIO_PIN_3,  GPIO_PIN_RESET); /* L_OPN_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_OPN_R */
+
+
+	    	  *ErrorStatus= Se_ok;
+	     }
+	     else
+	     {
+
+
+	    	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //nSHTDN=0
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_SRT_R = 1 */
+             HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_SRT_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_SRT_R */
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_LX1_G */
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7,  GPIO_PIN_SET); /* L_LX1_R */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET); /* L_LX2_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_LX2_R */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_RESET); /* L_LX3_G */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_RESET); /* L_LX3_R */
+	    	 HAL_GPIO_WritePin(GPIOG, GPIO_PIN_3,  GPIO_PIN_RESET); /* L_OPN_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_OPN_R */
+
+	    	 *ErrorStatus= Se_ERR;
+	     }
+
+
+      return ErrorStatus;
+
+}
+ErrorStatus_t* CheckRelayStatusAtt130(ErrorStatus_t* ErrorStatus)
+{
+
+	AttenuationPathStatusPin_t PinStatus;
+	PinStatus.K_SA_S1 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12);
+	PinStatus.K_SA_S2 = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6);
+	PinStatus.K_SA_S3 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2);
+	PinStatus.K_SB_S1 = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_15);
+	PinStatus.K_SB_S2 = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_7);
+	PinStatus.K_SB_S3 = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_9);
+	PinStatus.nFLT    = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_5);
+	PinStatus.PGOOD   = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3);
+
+
+
+
+     	 if ( (PinStatus.nFLT != GPIO_PIN_SET) ||
+	         (PinStatus.PGOOD != GPIO_PIN_SET))
+	     {
+	       *ErrorStatus = Se_ERR;
+	        return ErrorStatus;
+	     }
+
+	     if ((PinStatus.K_SA_S1 == GPIO_PIN_SET) &&
+			 (PinStatus.K_SA_S2 == GPIO_PIN_SET)   &&
+			 (PinStatus.K_SA_S3 == GPIO_PIN_RESET)   &&
+			 (PinStatus.K_SB_S1 == GPIO_PIN_SET) &&
+			 (PinStatus.K_SB_S2 == GPIO_PIN_SET)   &&
+			 (PinStatus.K_SB_S3 == GPIO_PIN_RESET) &&
+			 (PinStatus.K_HB_NC == GPIO_PIN_RESET) &&
+			 (PinStatus.K_HB_NO == GPIO_PIN_SET))
+
+	     {
+
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_LX1_G */
+	    	 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_SRT_G =1 */
+             HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_SRT_R  */
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_LX1_R */
+             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_SET); /* L_LX2_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_LX2_R */
+             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_RESET); /* L_LX3_G */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_RESET); /* L_LX3_R */
+             HAL_GPIO_WritePin(GPIOG, GPIO_PIN_3,  GPIO_PIN_RESET); /* L_OPN_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_OPN_R */
+
+
+	    	  *ErrorStatus= Se_ok;
+	     }
+	     else
+	     {
+
+
+	    	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //nSHTDN=0
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_SRT_R = 1 */
+             HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_SRT_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_SRT_R */
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_LX1_G */
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_LX1_R */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET); /* L_LX2_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2,  GPIO_PIN_SET); /* L_LX2_R */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_RESET); /* L_LX3_G */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_RESET); /* L_LX3_R */
+	    	 HAL_GPIO_WritePin(GPIOG, GPIO_PIN_3,  GPIO_PIN_RESET); /* L_OPN_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_OPN_R */
+
+	    	 *ErrorStatus= Se_ERR;
+	     }
+
+
+      return ErrorStatus;
+
+}
+ErrorStatus_t* CheckRelayStatusAtt155(ErrorStatus_t* ErrorStatus)
+{
+
+	AttenuationPathStatusPin_t PinStatus;
+	PinStatus.K_SA_S1 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12);
+	PinStatus.K_SA_S2 = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6);
+	PinStatus.K_SA_S3 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2);
+	PinStatus.K_SB_S1 = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_15);
+	PinStatus.K_SB_S2 = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_7);
+	PinStatus.K_SB_S3 = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_9);
+	PinStatus.nFLT    = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_5);
+	PinStatus.PGOOD   = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3);
+
+
+
+
+     	 if ( (PinStatus.nFLT != GPIO_PIN_SET) ||
+	         (PinStatus.PGOOD != GPIO_PIN_SET))
+	     {
+	       *ErrorStatus = Se_ERR;
+	        return ErrorStatus;
+	     }
+
+	     if ((PinStatus.K_SA_S1 == GPIO_PIN_SET) &&
+			 (PinStatus.K_SA_S2 == GPIO_PIN_SET)   &&
+			 (PinStatus.K_SA_S3 == GPIO_PIN_RESET)   &&
+			 (PinStatus.K_SB_S1 == GPIO_PIN_SET) &&
+			 (PinStatus.K_SB_S2 == GPIO_PIN_SET)   &&
+			 (PinStatus.K_SB_S3 == GPIO_PIN_RESET) &&
+			 (PinStatus.K_HB_NC == GPIO_PIN_SET) &&
+			 (PinStatus.K_HB_NO == GPIO_PIN_RESET))
+
+	     {
+
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_LX1_G */
+	    	 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_SRT_G =1 */
+             HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_SRT_R  */
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_LX1_R */
+             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET);   /* L_LX2_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_LX2_R */
+             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_SET); /* L_LX3_G */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_RESET); /* L_LX3_R */
+             HAL_GPIO_WritePin(GPIOG, GPIO_PIN_3,  GPIO_PIN_RESET); /* L_OPN_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_OPN_R */
+
+
+	    	  *ErrorStatus= Se_ok;
+	     }
+	     else
+	     {
+
+
+	    	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //nSHTDN=0
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_SRT_R = 1 */
+             HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_SRT_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_SRT_R */
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_LX1_G */
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_LX1_R */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET); /* L_LX2_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_LX2_R */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_RESET); /* L_LX3_G */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_SET); /* L_LX3_R */
+	    	 HAL_GPIO_WritePin(GPIOG, GPIO_PIN_3,  GPIO_PIN_RESET); /* L_OPN_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_OPN_R */
+
+	    	 *ErrorStatus= Se_ERR;
+	     }
+
+
+      return ErrorStatus;
+
+}
+ErrorStatus_t* CheckRelayStatusAttOPN(ErrorStatus_t* ErrorStatus)
+{
+
+	AttenuationPathStatusPin_t PinStatus;
+	PinStatus.K_SA_S1 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12);
+	PinStatus.K_SA_S2 = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6);
+	PinStatus.K_SA_S3 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2);
+	PinStatus.K_SB_S1 = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_15);
+	PinStatus.K_SB_S2 = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_7);
+	PinStatus.K_SB_S3 = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_9);
+	PinStatus.nFLT    = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_5);
+	PinStatus.PGOOD   = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3);
+
+
+
+
+     	 if ( (PinStatus.nFLT != GPIO_PIN_SET) ||
+	         (PinStatus.PGOOD != GPIO_PIN_SET))
+	     {
+	       *ErrorStatus = Se_ERR;
+	        return ErrorStatus;
+	     }
+
+	     if ((PinStatus.K_SA_S1 == GPIO_PIN_SET)   &&
+			 (PinStatus.K_SA_S2 == GPIO_PIN_SET)   &&
+			 (PinStatus.K_SA_S3 == GPIO_PIN_SET)   &&
+			 (PinStatus.K_SB_S1 == GPIO_PIN_SET)   &&
+			 (PinStatus.K_SB_S2 == GPIO_PIN_SET)   &&
+			 (PinStatus.K_SB_S3 == GPIO_PIN_SET))
+
+	     {
+
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_LX1_G */
+	    	 HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_SRT_G  */
+             HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_SRT_R  */
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_LX1_R */
+             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET);   /* L_LX2_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_LX2_R */
+             HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_RESET); /* L_LX3_G */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_RESET); /* L_LX3_R */
+             HAL_GPIO_WritePin(GPIOG, GPIO_PIN_3,  GPIO_PIN_SET); /* L_OPN_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_OPN_R */
+
+
+	    	  *ErrorStatus= Se_ok;
+	     }
+	     else
+	     {
+
+
+	    	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET); //nSHTDN=0
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_SRT_R */
+             HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_SRT_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_SRT_R */
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_6,  GPIO_PIN_RESET); /* L_LX1_G */
+	    	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7,  GPIO_PIN_RESET); /* L_LX1_R */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET); /* L_LX2_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2,  GPIO_PIN_RESET); /* L_LX2_R */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_RESET); /* L_LX3_G */
+	    	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_RESET); /* L_LX3_R */
+	    	 HAL_GPIO_WritePin(GPIOG, GPIO_PIN_3,  GPIO_PIN_RESET); /* L_OPN_G */
+	    	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6,  GPIO_PIN_SET); /* L_OPN_R */
+
+	    	 *ErrorStatus= Se_ERR;
+	     }
+
+
+      return ErrorStatus;
+
+}
+
+
+
+
 static void CheckPathVal(SetPathValue_t PathVal,SetPathValue_t PathVal2, ErrorStatus_t* ErrorStatusPath1, ErrorStatus_t* ErrorStatusPath2)
 {
+
+
+
 	if (PathVal == SET_PATH_A1)
 	 {
 	     /*Set Relay di ingresso a 2 stati*/
 	     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);  //K_A_E = 0
 
+
+
 	     /*Da inserire un delay per attendere lo switch del relay prima di fare il check*/
 
 	     /*Lettura Status Relay a 2 stati*/
 	     CheckRelayStatusA1(ErrorStatusPath1);
+
+
 
 	     /* Set Relay a 3 stati */
 
@@ -910,14 +1409,20 @@ static void CheckPathVal(SetPathValue_t PathVal,SetPathValue_t PathVal2, ErrorSt
 
 
 
-static void ErrorManager(ErrorStatus_t RelayErrorPath1,ErrorStatus_t RelayErrorPath2, char *reply, size_t reply_size)
+static void ErrorManager(ErrorStatus_t RelayErrorPath1,ErrorStatus_t RelayErrorPath2,ErrorStatus_t AttenuationErrorPath, char *reply, size_t reply_size)
 {
 
-	if ((RelayErrorPath1 == Err_ok) && (RelayErrorPath2 == Err_ok))
+	if (  (RelayErrorPath1 == Err_ok) && (RelayErrorPath2 == Err_ok) && (AttenuationErrorPath == Se_ok))
 	{
 	    snprintf(reply, reply_size, "ok:set\r\n");
 	}
-	else if ((RelayErrorPath1 == Err_InvalidConfig) &&
+
+	else if (AttenuationErrorPath == Se_ERR)
+    {
+		snprintf(reply, reply_size, "err: Se_ERR \r\n");
+	}
+
+    else if ((RelayErrorPath1 == Err_InvalidConfig) &&
 	         (RelayErrorPath2 == Err_InvalidConfig))
 	{
 	    snprintf(reply, reply_size, "err:Both Relay Not Switched \r\n");
@@ -987,20 +1492,213 @@ static void ErrorManager(ErrorStatus_t RelayErrorPath1,ErrorStatus_t RelayErrorP
 	return;
 
 }
-
-
-
-
-
-
-
-
-
-static SetValue_t hw_read_get(void)
+void SetAttenuationRelayPath(GPIO_PinState K_SA_E1,
+						 GPIO_PinState K_SA_E2,
+						 GPIO_PinState K_SA_E3,
+						 GPIO_PinState K_SB_E1,
+						 GPIO_PinState K_SB_E2,
+						 GPIO_PinState K_SB_E3,
+						 GPIO_PinState K_HA_E,
+						 GPIO_PinState K_HB_E)
 {
 
-	return g_set_value;
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,  K_SA_E1); /* K_SA_E1 */
+	 HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8,  K_SA_E2); /* K_SA_E2 */
+	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, K_SA_E3); /* K_SA_E3 */
+
+	 HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, K_SB_E1); /* K_SB_E1 */
+	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, K_SB_E2); /* K_SB_E2 */
+	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_14, K_SB_E3); /* K_SB_E3 */
+
+
+	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9,  K_HA_E); /* K_HA_E */
+	 HAL_GPIO_WritePin(GPIOF, GPIO_PIN_8,  K_HB_E); /* K_HB_E */
+
 }
+
+
+static const char *pathA_to_string(SetPathValue_t path)
+{
+    switch (path)
+    {
+    case SET_PATH_A1:
+        return "A1";
+
+    case SET_PATH_A2:
+        return "A2";
+
+    default:
+        return "A?";
+    }
+}
+
+static const char *pathB_to_string(SetPathValue_t path)
+{
+    switch (path)
+    {
+    case SET_PATH_B1:
+        return "B1";
+
+    case SET_PATH_B2:
+        return "B2";
+
+    default:
+        return "B?";
+    }
+}
+
+
+static int read_path_A(SetPathValue_t *path)
+{
+    GPIO_PinState ka_nc = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_7);
+    GPIO_PinState ka_no = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6);
+
+    if ((ka_nc == GPIO_PIN_RESET) && (ka_no == GPIO_PIN_SET))
+    {
+        *path = SET_PATH_A1;
+        return 1;
+    }
+
+    if ((ka_nc == GPIO_PIN_SET) && (ka_no == GPIO_PIN_RESET))
+    {
+        *path = SET_PATH_A2;
+        return 1;
+    }
+
+    return 0;
+}
+
+static int read_path_B(SetPathValue_t *path)
+{
+    GPIO_PinState kb_nc = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_2);
+    GPIO_PinState kb_no = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_5);
+
+    if ((kb_nc == GPIO_PIN_RESET) && (kb_no == GPIO_PIN_SET))
+    {
+        *path = SET_PATH_B1;
+        return 1;
+    }
+
+    if ((kb_nc == GPIO_PIN_SET) && (kb_no == GPIO_PIN_RESET))
+    {
+        *path = SET_PATH_B2;
+        return 1;
+    }
+
+    return 0;
+}
+
+static int read_attenuation(SetValue_t *att)
+{
+    GPIO_PinState sa_s1 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12);
+    GPIO_PinState sa_s2 = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6);
+    GPIO_PinState sa_s3 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2);
+
+    GPIO_PinState sb_s1 = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_15);
+    GPIO_PinState sb_s2 = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_7);
+    GPIO_PinState sb_s3 = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_9);
+
+    GPIO_PinState ha_e = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9);
+    GPIO_PinState hb_e = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_8);
+
+    if ((sa_s1 == GPIO_PIN_RESET) &&
+        (sa_s2 == GPIO_PIN_SET)   &&
+        (sa_s3 == GPIO_PIN_SET)   &&
+        (sb_s1 == GPIO_PIN_RESET) &&
+        (sb_s2 == GPIO_PIN_SET)   &&
+        (sb_s3 == GPIO_PIN_SET))
+    {
+        *att = SET_VAL_SRT;   /* SHORT / SRT */
+        return 1;
+    }
+
+    if ((sa_s1 == GPIO_PIN_SET)   &&
+        (sa_s2 == GPIO_PIN_RESET) &&
+        (sa_s3 == GPIO_PIN_SET)   &&
+        (sb_s1 == GPIO_PIN_SET)   &&
+        (sb_s2 == GPIO_PIN_RESET) &&
+        (sb_s3 == GPIO_PIN_SET))
+    {
+        *att = SET_VAL_30;
+        return 1;
+    }
+
+    if ((sa_s1 == GPIO_PIN_SET)   &&
+        (sa_s2 == GPIO_PIN_SET)   &&
+        (sa_s3 == GPIO_PIN_RESET) &&
+        (sb_s1 == GPIO_PIN_SET)   &&
+        (sb_s2 == GPIO_PIN_SET)   &&
+        (sb_s3 == GPIO_PIN_RESET) &&
+        (ha_e == GPIO_PIN_RESET)  &&
+        (hb_e == GPIO_PIN_RESET))
+    {
+        *att = SET_VAL_130;
+        return 1;
+    }
+
+    if ((sa_s1 == GPIO_PIN_SET)   &&
+        (sa_s2 == GPIO_PIN_SET)   &&
+        (sa_s3 == GPIO_PIN_RESET) &&
+        (sb_s1 == GPIO_PIN_SET)   &&
+        (sb_s2 == GPIO_PIN_SET)   &&
+        (sb_s3 == GPIO_PIN_RESET) &&
+        (ha_e == GPIO_PIN_SET)    &&
+        (hb_e == GPIO_PIN_SET))
+    {
+        *att = SET_VAL_155;
+        return 1;
+    }
+
+    if ((sa_s1 == GPIO_PIN_SET)   &&
+        (sa_s2 == GPIO_PIN_SET)   &&
+        (sa_s3 == GPIO_PIN_SET)   &&
+        (sb_s1 == GPIO_PIN_SET)   &&
+        (sb_s2 == GPIO_PIN_SET)   &&
+        (sb_s3 == GPIO_PIN_SET)   &&
+        (ha_e == GPIO_PIN_SET)    &&
+        (hb_e == GPIO_PIN_SET))
+    {
+        *att = SET_VAL_H;
+        return 1;
+    }
+
+    return 0;
+}
+
+static int hw_read_get_status(HwGetStatus_t *status)
+{
+    GPIO_PinState nflt  = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_5);
+    GPIO_PinState pgood = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3);
+
+    if ((nflt != GPIO_PIN_SET) || (pgood != GPIO_PIN_SET))
+    {
+        return 0;
+    }
+
+    if (read_path_A(&status->pathA) == 0)
+    {
+        return 0;
+    }
+
+    if (read_path_B(&status->pathB) == 0)
+    {
+        return 0;
+    }
+
+    if (read_attenuation(&status->attenuation) == 0)
+    {
+        return 0;
+    }
+
+    return 1;
+}
+
+
+
+
+
+
+
 
 static float read_3v3_voltage(void)
 {
