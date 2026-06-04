@@ -14,7 +14,7 @@
 
 typedef enum
 {
-    SET_VAL_0 = 0,
+    SET_VAL_SRT = 0,
     SET_VAL_30 = 30,
     SET_VAL_130 = 130,
     SET_VAL_155 = 155,
@@ -88,8 +88,19 @@ typedef struct
 }AttenuationPathStatusPin_t;
 
 
-static SetPathValue_t g_set_value = SET_VAL_0;
-static SetPathValue_t g_get_value = SET_VAL_0;
+typedef struct
+{
+    SetPathValue_t pathA;
+    SetPathValue_t pathB;
+    SetValue_t attenuation;
+} HwGetStatus_t;
+
+
+
+
+
+static SetPathValue_t g_set_value = SET_VAL_SRT;
+static SetPathValue_t g_get_value = SET_VAL_SRT;
 
 ErrorStatus_t* CheckRelayStatusA1(ErrorStatus_t*);
 ErrorStatus_t* CheckRelayStatusA2(ErrorStatus_t*);
@@ -122,6 +133,25 @@ static int parse_path_value(const char *s, SetPathValue_t *value);
 static int parse_path_value2(const char *s, SetPathValue_t *value);
 static int parse_att_value(const char *s, SetValue_t *value);
 static const char *set_value_to_string(SetValue_t value);
+
+
+static int read_path_A(SetPathValue_t *path);
+static int read_path_B(SetPathValue_t *path);
+static int read_attenuation(SetValue_t *att);
+
+static int hw_read_get_status(HwGetStatus_t *status);
+
+static const char *pathA_to_string(SetPathValue_t path);
+static const char *pathB_to_string(SetPathValue_t path);
+static const char *set_value_to_string(SetValue_t value);
+
+
+
+
+
+
+
+
 
 static void hw_apply_set(SetValue_t, SetPathValue_t,SetPathValue_t, ErrorStatus_t*,ErrorStatus_t*, ErrorStatus_t* );
 static SetValue_t hw_read_get(void);
@@ -301,14 +331,16 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
     if (strncmp(cmd, "get", 3) == 0)
     {
-        g_get_value = hw_read_get();
+        HwGetStatus_t status;
 
-        if (g_get_value == g_set_value)
+        if (hw_read_get_status(&status))
         {
             snprintf(reply,
                      reply_size,
-                     "ok:get %s\r\n",
-                     set_value_to_string(g_get_value));
+                     "ok:get %s %s %s\r\n",
+                     pathA_to_string(status.pathA),
+                     set_value_to_string(status.attenuation),
+                     pathB_to_string(status.pathB));
         }
         else
         {
@@ -317,7 +349,6 @@ static void process_command(const char *cmd, char *reply, size_t reply_size)
 
         return;
     }
-
     if (strncmp(cmd, "info", 4) == 0)
     {
         uint32_t uid0 = HAL_GetUIDw0();
@@ -406,9 +437,9 @@ static int parse_path_value2(const char *s, SetPathValue_t *value)
 
 static int parse_att_value(const char *s, SetValue_t *value)
 {
-    if (strncmp(s, "0", 1) == 0)
+    if (strncmp(s, "SRT", 3) == 0)
     {
-        *value = SET_VAL_0;
+        *value = SET_VAL_SRT;
         return 1;
     }
 
@@ -443,8 +474,8 @@ static const char *set_value_to_string(SetValue_t value)
 {
     switch (value)
     {
-    case SET_VAL_0:
-        return "0";
+    case SET_VAL_SRT:
+        return "SRT";
 
     case SET_VAL_30:
         return "30";
@@ -473,7 +504,7 @@ static void hw_apply_set(SetValue_t AttVal, SetPathValue_t PathVal,SetPathValue_
 	switch (AttVal)
     {
 
-		case SET_VAL_0:
+		case SET_VAL_SRT:
 		SetAttenuationRelayPath(GPIO_PIN_SET,  /* K_SA_E1 */
 					            GPIO_PIN_RESET,  /* K_SA_E2 */
 								GPIO_PIN_RESET,  /* K_SA_E3 */
@@ -1486,14 +1517,188 @@ void SetAttenuationRelayPath(GPIO_PinState K_SA_E1,
 }
 
 
-
-
-
-static SetValue_t hw_read_get(void)
+static const char *pathA_to_string(SetPathValue_t path)
 {
+    switch (path)
+    {
+    case SET_PATH_A1:
+        return "A1";
 
-	return g_set_value;
+    case SET_PATH_A2:
+        return "A2";
+
+    default:
+        return "A?";
+    }
 }
+
+static const char *pathB_to_string(SetPathValue_t path)
+{
+    switch (path)
+    {
+    case SET_PATH_B1:
+        return "B1";
+
+    case SET_PATH_B2:
+        return "B2";
+
+    default:
+        return "B?";
+    }
+}
+
+
+static int read_path_A(SetPathValue_t *path)
+{
+    GPIO_PinState ka_nc = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_7);
+    GPIO_PinState ka_no = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_6);
+
+    if ((ka_nc == GPIO_PIN_RESET) && (ka_no == GPIO_PIN_SET))
+    {
+        *path = SET_PATH_A1;
+        return 1;
+    }
+
+    if ((ka_nc == GPIO_PIN_SET) && (ka_no == GPIO_PIN_RESET))
+    {
+        *path = SET_PATH_A2;
+        return 1;
+    }
+
+    return 0;
+}
+
+static int read_path_B(SetPathValue_t *path)
+{
+    GPIO_PinState kb_nc = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_2);
+    GPIO_PinState kb_no = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_5);
+
+    if ((kb_nc == GPIO_PIN_RESET) && (kb_no == GPIO_PIN_SET))
+    {
+        *path = SET_PATH_B1;
+        return 1;
+    }
+
+    if ((kb_nc == GPIO_PIN_SET) && (kb_no == GPIO_PIN_RESET))
+    {
+        *path = SET_PATH_B2;
+        return 1;
+    }
+
+    return 0;
+}
+
+static int read_attenuation(SetValue_t *att)
+{
+    GPIO_PinState sa_s1 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12);
+    GPIO_PinState sa_s2 = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6);
+    GPIO_PinState sa_s3 = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2);
+
+    GPIO_PinState sb_s1 = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_15);
+    GPIO_PinState sb_s2 = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_7);
+    GPIO_PinState sb_s3 = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_9);
+
+    GPIO_PinState ha_e = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9);
+    GPIO_PinState hb_e = HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_8);
+
+    if ((sa_s1 == GPIO_PIN_RESET) &&
+        (sa_s2 == GPIO_PIN_SET)   &&
+        (sa_s3 == GPIO_PIN_SET)   &&
+        (sb_s1 == GPIO_PIN_RESET) &&
+        (sb_s2 == GPIO_PIN_SET)   &&
+        (sb_s3 == GPIO_PIN_SET))
+    {
+        *att = SET_VAL_SRT;   /* SHORT / SRT */
+        return 1;
+    }
+
+    if ((sa_s1 == GPIO_PIN_SET)   &&
+        (sa_s2 == GPIO_PIN_RESET) &&
+        (sa_s3 == GPIO_PIN_SET)   &&
+        (sb_s1 == GPIO_PIN_SET)   &&
+        (sb_s2 == GPIO_PIN_RESET) &&
+        (sb_s3 == GPIO_PIN_SET))
+    {
+        *att = SET_VAL_30;
+        return 1;
+    }
+
+    if ((sa_s1 == GPIO_PIN_SET)   &&
+        (sa_s2 == GPIO_PIN_SET)   &&
+        (sa_s3 == GPIO_PIN_RESET) &&
+        (sb_s1 == GPIO_PIN_SET)   &&
+        (sb_s2 == GPIO_PIN_SET)   &&
+        (sb_s3 == GPIO_PIN_RESET) &&
+        (ha_e == GPIO_PIN_RESET)  &&
+        (hb_e == GPIO_PIN_RESET))
+    {
+        *att = SET_VAL_130;
+        return 1;
+    }
+
+    if ((sa_s1 == GPIO_PIN_SET)   &&
+        (sa_s2 == GPIO_PIN_SET)   &&
+        (sa_s3 == GPIO_PIN_RESET) &&
+        (sb_s1 == GPIO_PIN_SET)   &&
+        (sb_s2 == GPIO_PIN_SET)   &&
+        (sb_s3 == GPIO_PIN_RESET) &&
+        (ha_e == GPIO_PIN_SET)    &&
+        (hb_e == GPIO_PIN_SET))
+    {
+        *att = SET_VAL_155;
+        return 1;
+    }
+
+    if ((sa_s1 == GPIO_PIN_SET)   &&
+        (sa_s2 == GPIO_PIN_SET)   &&
+        (sa_s3 == GPIO_PIN_SET)   &&
+        (sb_s1 == GPIO_PIN_SET)   &&
+        (sb_s2 == GPIO_PIN_SET)   &&
+        (sb_s3 == GPIO_PIN_SET)   &&
+        (ha_e == GPIO_PIN_SET)    &&
+        (hb_e == GPIO_PIN_SET))
+    {
+        *att = SET_VAL_H;
+        return 1;
+    }
+
+    return 0;
+}
+
+static int hw_read_get_status(HwGetStatus_t *status)
+{
+    GPIO_PinState nflt  = HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_5);
+    GPIO_PinState pgood = HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_3);
+
+    if ((nflt != GPIO_PIN_SET) || (pgood != GPIO_PIN_SET))
+    {
+        return 0;
+    }
+
+    if (read_path_A(&status->pathA) == 0)
+    {
+        return 0;
+    }
+
+    if (read_path_B(&status->pathB) == 0)
+    {
+        return 0;
+    }
+
+    if (read_attenuation(&status->attenuation) == 0)
+    {
+        return 0;
+    }
+
+    return 1;
+}
+
+
+
+
+
+
+
 
 static float read_3v3_voltage(void)
 {
