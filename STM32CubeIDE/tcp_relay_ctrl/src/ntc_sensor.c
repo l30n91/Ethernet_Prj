@@ -1,6 +1,6 @@
 #include "ntc_sensor.h"
 #include <math.h>
-
+#include "main.h"
 /*
  * LUT generated from Vishay NTC RT Calculation data.
  * Temperature range: -55 degC to 150 degC.
@@ -382,3 +382,46 @@ const NTC_LutPoint_t *NTC_GetLUT(size_t *count)
 
     return s_ntc_lut;
 }
+
+
+
+
+extern uint16_t ADC_ReadRaw();
+extern ADC_HandleTypeDef hadc1;
+
+static float g_ntc_temp_c = 0.0f;
+static uint16_t g_adc_raw = 0;
+static float g_ntc_resistance = 0.0f;
+
+
+void NTC_Task(void const *argument)
+{
+    NTC_Config_t ntc_cfg = NTC_DefaultConfig();
+
+    ntc_cfg.vref = 3.3f;
+    ntc_cfg.rload_ohm = 2200.0f;
+    ntc_cfg.adc_max = 4095.0f;
+
+    /*
+     * Default:
+     * 3V3 -> RLOAD -> ADC -> NTC -> GND
+     */
+    ntc_cfg.mode = NTC_DIVIDER_RLOAD_TOP_NTC_BOTTOM;
+
+    for (;;)
+    {
+        g_adc_raw = ADC_ReadRaw();
+
+        g_ntc_resistance = NTC_ADCToResistance(g_adc_raw, &ntc_cfg);
+
+        g_ntc_temp_c = NTC_ADCToTemperatureLUT(g_adc_raw, &ntc_cfg);
+
+        /*
+         * Oppure con formula:
+         * g_ntc_temp_c = NTC_ADCToTemperatureFormula(g_adc_raw, &ntc_cfg);
+         */
+
+        osDelay(1000);
+    }
+}
+

@@ -45,7 +45,8 @@ static void GPIO_Config(void);
 static void RelayInitConfig(void);
 static void LedInitConfig(void);
 static void MX_ADC1_Init(void);
-uint16_t ADC_ReadRaw(void);
+static uint16_t ADC_ReadRaw(void);
+
 
 ADC_HandleTypeDef hadc1;
 /* Private functions ---------------------------------------------------------*/
