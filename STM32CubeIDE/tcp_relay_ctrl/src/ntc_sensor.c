@@ -425,3 +425,13 @@ void NTC_Task(void const *argument)
     }
 }
 
+
+void NTC_CreateTask(void)
+{
+
+	osThreadDef(NTC_THREAD, NTC_Task, osPriorityNormal, 0, 512);
+	osThreadCreate(osThread(NTC_THREAD), NULL);
+}
+
+
+

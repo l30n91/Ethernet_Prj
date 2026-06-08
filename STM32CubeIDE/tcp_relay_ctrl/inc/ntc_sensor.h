@@ -69,6 +69,7 @@ float NTC_ADCToTemperatureFormula(uint16_t adc_raw, const NTC_Config_t *cfg);
 
 float NTC_ResistanceToTemperatureLUT(float r_ntc_ohm);
 float NTC_ADCToTemperatureLUT(uint16_t adc_raw, const NTC_Config_t *cfg);
+void NTC_CreateTask(void);
 
 const NTC_LutPoint_t *NTC_GetLUT(size_t *count);
 

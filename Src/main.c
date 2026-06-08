@@ -29,7 +29,7 @@
 #ifdef USE_LCD
 #include "lcd_log.h"
 #endif
-
+#include "ntc_sensor.h"
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -45,7 +45,7 @@ static void GPIO_Config(void);
 static void RelayInitConfig(void);
 static void LedInitConfig(void);
 static void MX_ADC1_Init(void);
-static uint16_t ADC_ReadRaw(void);
+uint16_t ADC_ReadRaw(void);
 
 
 ADC_HandleTypeDef hadc1;
@@ -88,6 +88,8 @@ int main(void)
   
   osThreadCreate (osThread(Start), NULL);
   
+  NTC_CreateTask();
+
   /* Start scheduler */
   osKernelStart();
   
