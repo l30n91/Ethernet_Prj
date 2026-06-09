@@ -390,6 +390,7 @@ extern uint16_t ADC_ReadRaw();
 extern ADC_HandleTypeDef hadc1;
 
 static float g_ntc_temp_c = 0.0f;
+static float g_ntc_tmp_calculated=0.0f;
 static uint16_t g_adc_raw = 0;
 static float g_ntc_resistance = 0.0f;
 
@@ -410,10 +411,14 @@ void NTC_Task(void const *argument)
 
     for (;;)
     {
-        g_adc_raw = ADC_ReadRaw();
 
+    	/* Adc raw value*/
+    	g_adc_raw = ADC_ReadRaw();
+        /*adc resistence*/
         g_ntc_resistance = NTC_ADCToResistance(g_adc_raw, &ntc_cfg);
-
+        /* Temperature from Vishay calculation*/
+        g_ntc_tmp_calculated = NTC_ResistanceToTemperatureFormula(6529.74);
+        /* Temperature from LUT*/
         g_ntc_temp_c = NTC_ADCToTemperatureLUT(g_adc_raw, &ntc_cfg);
 
         /*
