@@ -391,8 +391,8 @@ const NTC_LutPoint_t *NTC_GetLUT(size_t *count)
 
 
 
-extern uint16_t ADC_ReadRaw();
-extern ADC_HandleTypeDef hadc1;
+extern uint16_t ADC_ReadRaw(uint32_t);
+
 
 static float g_ntc_temp_c = 0.0f;
 static float g_ntc_tmp_calculated=0.0f;
@@ -418,7 +418,8 @@ void NTC_Task(void const *argument)
     {
 
     	/* Adc raw value*/
-    	g_adc_raw = ADC_ReadRaw();
+    	g_adc_raw = ADC_ReadRaw(ADC_CHANNEL_9);
+
         /*adc resistence*/
         g_ntc_resistance = NTC_ADCToResistance(g_adc_raw, &ntc_cfg); //partitore
         /* Temperature from Vishay calculation*/

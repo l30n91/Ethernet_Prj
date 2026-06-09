@@ -44,11 +44,11 @@ static void Netif_Config(void);
 static void GPIO_Config(void);
 static void RelayInitConfig(void);
 static void LedInitConfig(void);
-static void MX_ADC1_Init(void);
-uint16_t ADC_ReadRaw(void);
+static void MX_ADC_Init(void);
+uint16_t ADC_ReadRaw(uint32_t);
 
 
-ADC_HandleTypeDef hadc1;
+ADC_HandleTypeDef hadc3;
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -71,7 +71,7 @@ int main(void)
   /* Configure the system clock to 180 MHz */
   SystemClock_Config();
   
-  MX_ADC1_Init();
+  MX_ADC_Init();
   GPIO_Config();
 
   /* Initialize LCD and LEDs */
@@ -1182,49 +1182,57 @@ void LedInitConfig(void)
 
 
 
-void MX_ADC1_Init(void)
+void MX_ADC_Init(void)
 {
-    ADC_ChannelConfTypeDef sConfig = {0};
 
-    __HAL_RCC_ADC1_CLK_ENABLE();
 
-    hadc1.Instance = ADC1;
-    hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
-    hadc1.Init.Resolution = ADC_RESOLUTION_12B;
-    hadc1.Init.ScanConvMode = DISABLE;
-    hadc1.Init.ContinuousConvMode = DISABLE;
-    hadc1.Init.DiscontinuousConvMode = DISABLE;
-    hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-    hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-    hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-    hadc1.Init.NbrOfConversion = 1;
-    hadc1.Init.DMAContinuousRequests = DISABLE;
-    hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+    __HAL_RCC_ADC3_CLK_ENABLE();
 
-    HAL_ADC_Init(&hadc1);
+    hadc3.Instance = ADC3;
+    hadc3.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+    hadc3.Init.Resolution = ADC_RESOLUTION_12B;
+    hadc3.Init.ScanConvMode = DISABLE;
+    hadc3.Init.ContinuousConvMode = DISABLE;
+    hadc3.Init.DiscontinuousConvMode = DISABLE;
+    hadc3.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    hadc3.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+    hadc3.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+    hadc3.Init.NbrOfConversion = 1;
+    hadc3.Init.DMAContinuousRequests = DISABLE;
+    hadc3.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
 
-    sConfig.Channel = ADC_CHANNEL_10;   // cambia questo
-    sConfig.Rank = 1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+    HAL_ADC_Init(&hadc3);
 
-    HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+    //sConfig.Channel = ADC_CHANNEL_10;   // cambia questo
+    //sConfig.Rank = 1;
+    //sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+
+    //HAL_ADC_ConfigChannel(&hadc3, &sConfig);
 }
 
 
 
 
-uint16_t ADC_ReadRaw(void)
+uint16_t ADC_ReadRaw(uint32_t channel)
 {
     uint16_t value = 0;
 
-    HAL_ADC_Start(&hadc1);
+    ADC_ChannelConfTypeDef sConfig = {0};
 
-    if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)
+    sConfig.Channel = channel;   // cambia questo
+    sConfig.Rank = 1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+
+    HAL_ADC_ConfigChannel(&hadc3, &sConfig);
+
+    HAL_ADC_Start(&hadc3);
+
+    if (HAL_ADC_PollForConversion(&hadc3, 100) == HAL_OK)
     {
-        value = HAL_ADC_GetValue(&hadc1);
+        value = HAL_ADC_GetValue(&hadc3);
     }
 
-    HAL_ADC_Stop(&hadc1);
+    HAL_ADC_Stop(&hadc3);
 
     return value;
 }
