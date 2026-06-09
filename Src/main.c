@@ -1087,7 +1087,43 @@ static void GPIO_Config(void)
 
 
 
-     RelayInitConfig();
+      /*=========================================================
+                              PF3 -> NB ADC3 CHANNEL 9
+      =========================================================*/
+       GPIO_InitStruct.Pin = GPIO_PIN_3;
+       GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+       GPIO_InitStruct.Pull = GPIO_NOPULL;
+       HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+       HAL_GPIO_WritePin(GPIOF, GPIO_PIN_3, GPIO_PIN_RESET);
+
+
+       /*=========================================================
+                                    PF5 -> NA ADC3 CHANNEL 15
+
+            =========================================================*/
+        GPIO_InitStruct.Pin = GPIO_PIN_5;
+        GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+
+
+
+        /*=========================================================
+                                    PF10 -> NAB     ADC3 CHANNEL 8
+
+            =========================================================*/
+        GPIO_InitStruct.Pin = GPIO_PIN_10;
+        GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+
+
+
+
+      RelayInitConfig();
      LedInitConfig();
 
 

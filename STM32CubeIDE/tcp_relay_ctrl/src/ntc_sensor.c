@@ -395,9 +395,15 @@ extern uint16_t ADC_ReadRaw(uint32_t);
 
 
 static float g_ntc_temp_c = 0.0f;
-static float g_ntc_tmp_calculated=0.0f;
-static uint16_t g_adc_raw = 0;
-static float g_ntc_resistance = 0.0f;
+static float g_ntc_tmp_calculated_nb=0.0f;
+static float g_ntc_tmp_calculated_na=0.0f;
+static float g_ntc_tmp_calculated_nab=0.0f;
+static uint16_t g_adc_raw_nb = 0;
+static uint16_t g_adc_raw_na = 0;
+static uint16_t g_adc_raw_nab = 0;
+static float g_ntc_resistance_nb = 0.0f;
+static float g_ntc_resistance_na = 0.0f;
+static float g_ntc_resistance_nab = 0.0f;
 
 
 void NTC_Task(void const *argument)
@@ -418,19 +424,35 @@ void NTC_Task(void const *argument)
     {
 
     	/* Adc raw value*/
-    	g_adc_raw = ADC_ReadRaw(ADC_CHANNEL_9);
-
+    	g_adc_raw_nb = ADC_ReadRaw(ADC_CHANNEL_9);
+    	g_adc_raw_na = ADC_ReadRaw(ADC_CHANNEL_15);
+    	g_adc_raw_nab = ADC_ReadRaw(ADC_CHANNEL_8);
         /*adc resistence*/
-        g_ntc_resistance = NTC_ADCToResistance(g_adc_raw, &ntc_cfg); //partitore
+        g_ntc_resistance_nb = NTC_ADCToResistance(g_adc_raw_nb, &ntc_cfg); //partitore
         /* Temperature from Vishay calculation*/
-        g_ntc_tmp_calculated = NTC_ResistanceToTemperatureFormula(g_ntc_resistance);
+        g_ntc_tmp_calculated_nb = NTC_ResistanceToTemperatureFormula(g_ntc_resistance_nb);
         /* Temperature from LUT*/
-        g_ntc_temp_c = NTC_ADCToTemperatureLUT(g_adc_raw, &ntc_cfg);
+        // g_ntc_temp_c = NTC_ADCToTemperatureLUT(g_adc_raw_nb, &ntc_cfg);
 
         /*
          * Oppure con formula:
          * g_ntc_temp_c = NTC_ADCToTemperatureFormula(g_adc_raw, &ntc_cfg);
          */
+
+
+        g_ntc_resistance_na = NTC_ADCToResistance(g_adc_raw_na, &ntc_cfg); //partitore
+        /* Temperature from Vishay calculation*/
+        g_ntc_tmp_calculated_na = NTC_ResistanceToTemperatureFormula(g_ntc_resistance_na);
+
+
+        g_ntc_resistance_nab = NTC_ADCToResistance(g_adc_raw_nab, &ntc_cfg); //partitore
+        /* Temperature from Vishay calculation*/
+        g_ntc_tmp_calculated_nab = NTC_ResistanceToTemperatureFormula(g_ntc_resistance_nab);
+
+
+
+
+
 
         osDelay(1000);
     }
