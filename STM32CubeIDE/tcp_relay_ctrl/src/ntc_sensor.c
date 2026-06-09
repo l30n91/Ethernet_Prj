@@ -1,6 +1,20 @@
 #include "ntc_sensor.h"
 #include <math.h>
 #include "main.h"
+
+
+
+
+
+
+uint16_t ADC_ReadRaw(uint32_t);
+uint16_t ADC_ReadInternalTempRaw(void);
+float STM32_InternalTemp_Read(void);
+
+extern ADC_HandleTypeDef hadc3;
+extern ADC_HandleTypeDef hadc1;
+
+
 /*
  * LUT generated from Vishay NTC RT Calculation data.
  * Temperature range: -55 degC to 150 degC.
@@ -404,6 +418,7 @@ static uint16_t g_adc_raw_nab = 0;
 static float g_ntc_resistance_nb = 0.0f;
 static float g_ntc_resistance_na = 0.0f;
 static float g_ntc_resistance_nab = 0.0f;
+static float g_stm32_internal_temp=0.0f;
 
 
 void NTC_Task(void const *argument)
@@ -449,6 +464,8 @@ void NTC_Task(void const *argument)
         /* Temperature from Vishay calculation*/
         g_ntc_tmp_calculated_nab = NTC_ResistanceToTemperatureFormula(g_ntc_resistance_nab);
 
+        g_stm32_internal_temp = STM32_InternalTemp_Read();
+
 
 
 
@@ -467,4 +484,68 @@ void NTC_CreateTask(void)
 }
 
 
+uint16_t ADC_ReadRaw(uint32_t channel)
+{
+    uint16_t value = 0;
 
+    ADC_ChannelConfTypeDef sConfig = {0};
+
+    sConfig.Channel = channel;   // cambia questo
+    sConfig.Rank = 1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+
+    HAL_ADC_ConfigChannel(&hadc3, &sConfig);
+
+    HAL_ADC_Start(&hadc3);
+
+    if (HAL_ADC_PollForConversion(&hadc3, 100) == HAL_OK)
+    {
+        value = HAL_ADC_GetValue(&hadc3);
+    }
+
+    HAL_ADC_Stop(&hadc3);
+
+    return value;
+}
+
+
+
+
+
+ uint16_t ADC_ReadInternalTempRaw(void)
+{
+    ADC_ChannelConfTypeDef sConfig = {0};
+    uint16_t adc_raw = 0;
+
+    sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
+    sConfig.Rank = 1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+
+    HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+
+    HAL_ADC_Start(&hadc1);
+
+    if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)
+    {
+        adc_raw = (uint16_t)HAL_ADC_GetValue(&hadc1);
+    }
+
+    HAL_ADC_Stop(&hadc1);
+
+    return adc_raw;
+}
+
+ float STM32_InternalTemp_Read(void)
+ {
+     uint16_t adc_raw;
+     float vsense;
+     float temperature;
+
+     adc_raw = ADC_ReadInternalTempRaw();
+
+     vsense = ((float)adc_raw * 3.3f) / 4095.0f;
+
+     temperature = ((vsense - 0.76f) / 0.0025f) + 25.0f;
+
+     return temperature;
+ }
