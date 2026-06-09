@@ -228,6 +228,9 @@ NTC_Config_t NTC_DefaultConfig(void)
     return cfg;
 }
 
+
+
+
 static int NTC_IsValidConfig(const NTC_Config_t *cfg)
 {
     if (cfg == 0)
@@ -254,6 +257,8 @@ float NTC_ADCToVoltage(uint16_t adc_raw, const NTC_Config_t *cfg)
 
     return ((float)adc_raw * cfg->vref) / cfg->adc_max;
 }
+
+
 
 float NTC_VoltageToResistance(float vadc, const NTC_Config_t *cfg)
 {
@@ -415,9 +420,9 @@ void NTC_Task(void const *argument)
     	/* Adc raw value*/
     	g_adc_raw = ADC_ReadRaw();
         /*adc resistence*/
-        g_ntc_resistance = NTC_ADCToResistance(g_adc_raw, &ntc_cfg);
+        g_ntc_resistance = NTC_ADCToResistance(g_adc_raw, &ntc_cfg); //partitore
         /* Temperature from Vishay calculation*/
-        g_ntc_tmp_calculated = NTC_ResistanceToTemperatureFormula(6529.74);
+        g_ntc_tmp_calculated = NTC_ResistanceToTemperatureFormula(g_ntc_resistance);
         /* Temperature from LUT*/
         g_ntc_temp_c = NTC_ADCToTemperatureLUT(g_adc_raw, &ntc_cfg);
 
